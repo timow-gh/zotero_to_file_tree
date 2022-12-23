@@ -14,10 +14,6 @@ include(project_preamble)
 project_preamble()
 
 include(cmake/CPM.cmake)
-set(CPM_SOURCE_CACHE "C:/Users/testUser/dev/repos/cpm_source_cache")
-if (NOT CPM_SOURCE_CACHE)
-    message(AUTHOR_WARNING "CPM_SOURCE_CACHE not set. The source files are downloaded for each project.")
-endif ()
 
 # Create options for the project
 set(ENABLE_DEVELOPER_MODE
@@ -26,18 +22,23 @@ set(ENABLE_DEVELOPER_MODE
 
 option(USE_SCCACHE "Use sccache" ON)
 if (ENABLE_DEVELOPER_MODE)
-    option(${PROJECT_NAME}_TESTS "Build tests" ON)
-    option(${PROJECT_NAME}_BENCHMARKS "Build benchmarks" ON)
     option(${PROJECT_NAME}_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
     option(${PROJECT_NAME}_STATIC_ANALYSIS "" ON)
+
+    # check if the file CPMSourceVariable.cmake exists in project root
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CPMSourceVariable.cmake")
+        include(CPMSourceVariable.cmake)
+    else ()
+        message(AUTHOR_WARNING "CPMSourceVariable.cmake not found. Set the CPM_SOURCE_CACHE variable to a directory to cache the git clones or create a the CPMSourceVariable.cmake file in the project root. Set the CPM_SOURCE_CACHE variable in CPMSourceVariable.cmake to keep your paths private.")
+    endif ()
+
+    if (NOT CPM_SOURCE_CACHE)
+        message(AUTHOR_WARNING "CPM_SOURCE_CACHE not set. The source files are downloaded for each project.")
+    endif ()
 else ()
-    option(${PROJECT_NAME}_TESTS "Build tests" OFF)
-    option(${PROJECT_NAME}_BENCHMARKS "Build benchmarks" OFF)
     option(${PROJECT_NAME}_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
     option(${PROJECT_NAME}_STATIC_ANALYSIS "" OFF)
 endif ()
-
-option(${PROJECT_NAME}_PACKAGE "Use CPack to create an installer" ON)
 
 if (USE_SCCACHE)
     if (NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja")
@@ -60,21 +61,10 @@ if (USE_SCCACHE)
     fix_msvc_ninja_compile_flags()
 endif ()
 
+message(STATUS "USE_SCCACHE: ${USE_SCCACHE}")
+message(STATUS "${PROJECT_NAME}_WARNINGS_AS_ERRORS: ${${PROJECT_NAME}_WARNINGS_AS_ERRORS}")
+message(STATUS "${PROJECT_NAME}_STATIC_ANALYSIS: ${${PROJECT_NAME}_STATIC_ANALYSIS}")
+
 add_subdirectory(dependencies)
 
 add_subdirectory(src)
-
-if (${PROJECT_NAME}_PACKAGE)
-    add_subdirectory(packaging)
-endif ()
-
-#if (${PROJECT_NAME}_BENCHMARKS)
-#    add_subdirectory(benchmark)
-#endif ()
-
-#if (${PROJECT_NAME}_TESTS)
-#    include(CTest)
-#    enable_testing()
-#    add_subdirectory(test)
-#endif ()
-

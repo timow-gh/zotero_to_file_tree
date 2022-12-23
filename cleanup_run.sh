@@ -1,4 +1,4 @@
 #!/bin/bash
 
-yes | rm -r ../cpp_proj_template_build
-yes | rm -r ../cpp_proj_template_install
+yes | rm -r ../zotero_to_file_tree_build
+yes | rm -r ../zotero_to_file_tree_install

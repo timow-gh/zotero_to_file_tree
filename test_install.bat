@@ -9,14 +9,14 @@ popd
 echo "REL_REPOSITORY_PATH=%REL_REPOSITORY_PATH%"
 echo "REPOSITORY_PARENT_PATH=%REPOSITORY_PARENT_PATH%"
 
-set BUILD_DIR=%REPOSITORY_PARENT_PATH%\cpp_proj_template_build
+set BUILD_DIR=%REPOSITORY_PARENT_PATH%\zotero_to_file_tree_build
 set SOURCE_DIR=.\
-set INSTALL_DIR=%REPOSITORY_PARENT_PATH%\cpp_proj_template_install
+set INSTALL_DIR=%REPOSITORY_PARENT_PATH%\zotero_to_file_tree_install
 
-set FIND_PACKAGE_TEST_DIR=%REPOSITORY_PARENT_PATH%\cpp_proj_template_find_package_test
-set FIND_PACKAGE_TEST_BUILD_DIR=%FIND_PACKAGE_TEST_DIR%\cpp_proj_template_build
+set FIND_PACKAGE_TEST_DIR=%REPOSITORY_PARENT_PATH%\zotero_to_file_tree_find_package_test
+set FIND_PACKAGE_TEST_BUILD_DIR=%FIND_PACKAGE_TEST_DIR%\zotero_to_file_tree_build
 set FIND_PACKAGE_TEST_SOURCE_DIR=.\test\test_install\template_find_package_install_test
-set FIND_PACKAGE_TEST_INSTALL_DIR=%FIND_PACKAGE_TEST_DIR%\cpp_proj_template_install
+set FIND_PACKAGE_TEST_INSTALL_DIR=%FIND_PACKAGE_TEST_DIR%\zotero_to_file_tree_install
 
 echo "FIND_PACKAGE_TEST_INSTALL_DIR=%FIND_PACKAGE_TEST_INSTALL_DIR%"
 

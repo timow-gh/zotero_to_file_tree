@@ -1,7 +1,7 @@
-set(TARGET_NAME zotero_to_file_tree_src)
+set(TARGET_NAME zotero_to_file_tree)
 
-add_executable(${TARGET_NAME} main.cpp)
-target_link_libraries(${TARGET_NAME} PRIVATE CLI11::CLI11)
+add_executable(${TARGET_NAME} main.cpp test_sql_statements.cpp SqlStatements.cpp SqlStatements.h)
+target_link_libraries(${TARGET_NAME} PRIVATE CLI11::CLI11 fmt::fmt SQLiteCpp)
 
 set_target_properties(${TARGET_NAME}
         PROPERTIES
