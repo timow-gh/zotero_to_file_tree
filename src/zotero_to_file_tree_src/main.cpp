@@ -8,7 +8,6 @@ namespace zotfiles
 {
 /*
  * TODO:
- * - add sql statement to get all std::filesystem paths of items with a pdf attachment
  * - add a command line option to specify the collection name (optional)
  * - add sql statement to get all std::filesystem paths of items with a pdf attachment in a specific collection
  * - add sql statement to get all std::filesystem paths of items with a pdf attachment in a specific collection and its subcollections
@@ -51,6 +50,9 @@ int main(int argc, char** argv)
   std::string outputDirStr{""};
   app.add_option("-o,--output_dir", outputDirStr, "Path to the output directory.")->required();
 
+  bool overwriteOutputDir{false};
+  app.add_flag("--overwrite", overwriteOutputDir, "Overwrite the output directory if it exists.");
+
   CLI11_PARSE(app, argc, argv);
 
   auto zoteroDbPath = zotfiles::get_zotero_db_path(libraryPathStr);
@@ -70,14 +72,21 @@ int main(int argc, char** argv)
     fmt::print("\n{}\n", zotfiles::print_table(zoteroDBInfo));
   }
 
-  // TODO check if output dir is valid
-
-  //  auto outputDirPath = std::filesystem::path(outputDirStr);
-  //  if (std::filesystem::exists(outputDirPath))
-  //  {
-  //    fmt::print("The output directory already exists: {}\n", outputDirPath.string());
-  //    return EXIT_FAILURE;
-  //  }
+  auto outputDirPath = std::filesystem::path(outputDirStr);
+  if (std::filesystem::exists(outputDirPath))
+  {
+    if (!overwriteOutputDir)
+    {
+      fmt::print("Aborting. The output directory already exists: {}\n", outputDirPath.string());
+      return EXIT_FAILURE;
+    }
+    else
+    {
+      fmt::print("The output directory already exists and will be overwritten: {}\n", outputDirPath.string());
+      std::filesystem::remove_all(outputDirPath);
+      std::filesystem::create_directories(outputDirPath);
+    }
+  }
 
   if (!zotfiles::is_supported_zotero_db(zoteroDbPath))
   {
@@ -123,6 +132,14 @@ int main(int argc, char** argv)
 
   // remove the items without a valid path
   pdfItems.erase(pdfItemsEnd2, pdfItems.end());
+
+  std::filesystem::create_directories(outputDirPath);
+
+  // copy all pdf files to the output directory
+  for (const auto& item: pdfItems)
+  {
+    std::filesystem::copy(item.pdfFilePath, outputDirPath / item.pdfItem.path);
+  }
 
   return 0;
 }

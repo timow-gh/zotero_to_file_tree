@@ -58,7 +58,6 @@ static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::i
     it->second(info, static_cast<std::uint32_t>(val));
   }
 }
-
 ZoteroDBInfo zotero_db_info(const std::filesystem::path& zotero_db_path)
 {
   assert(std::filesystem::exists(zotero_db_path));
