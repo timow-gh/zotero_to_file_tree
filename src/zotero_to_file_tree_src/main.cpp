@@ -41,13 +41,13 @@ int main(int argc, char** argv)
 {
   CLI::App app{"Converts a exported zotero library to a file tree."};
 
-  std::string libraryPathStr{""};
+  std::string libraryPathStr;
   app.add_option("-l,--lib_path", libraryPathStr, "Path to the zotero library. Default is the current directory.");
 
   bool printZoteroDBInfo{false};
   app.add_flag("--db_info", printZoteroDBInfo, "Print the zotero db info.");
 
-  std::string outputDirStr{""};
+  std::string outputDirStr;
   app.add_option("-o,--output_dir", outputDirStr, "Path to the output directory.")->required();
 
   bool overwriteOutputDir{false};
@@ -103,32 +103,52 @@ int main(int argc, char** argv)
       std::remove_if(pdfItems.begin(), pdfItems.end(), [](const zotfiles::PdfItemWithPath& item) { return item.pdfItem.path.empty(); });
   pdfItems.erase(pdfItemsEnd, pdfItems.end());
 
+  std::vector<std::filesystem::path> pdfFiles;
   const std::string_view pdfItemPathPrefix = "storage:";
   for (auto& item: pdfItems)
   {
-    // check, if the path starts with the prefix pdfItemPathPrefix and remove it
+    pdfFiles.clear();
+
     if (item.pdfItem.path.find(pdfItemPathPrefix) == 0)
     {
       item.pdfItem.path = item.pdfItem.path.substr(pdfItemPathPrefix.size());
     }
 
-    // build path to the pdf file using the path to the zotero db directory. Use the subdirectory "storage", in this directory, there must
-    // be a subdirectory with the name of the 'key' member of the pdf item.
-    item.pdfFilePath = zoteroDbPath.parent_path() / "storage" / item.pdfItem.key / item.pdfItem.path;
+    const std::filesystem::path storageDir = zoteroDbPath.parent_path() / "storage" / item.pdfItem.key;
+    if (!std::filesystem::exists(storageDir))
+    {
+      continue;
+    }
+
+    for (const auto& file: std::filesystem::directory_iterator(storageDir))
+    {
+      if (file.path().extension() == ".pdf")
+      {
+        pdfFiles.push_back(file.path());
+      }
+    }
+    if (pdfFiles.empty())
+    {
+      continue;
+    }
+    if (pdfFiles.size() > 1)
+    {
+      fmt::print("More than one pdf file found in the folder: {}\n", storageDir.string());
+      continue;
+    }
+
+    item.pdfFilePath = pdfFiles.front();
   }
 
-  // Use std::partition to separate the pdf items with a valid path from the ones with an invalid path
   auto pdfItemsEnd2 = std::partition(pdfItems.begin(),
                                      pdfItems.end(),
                                      [](const zotfiles::PdfItemWithPath& item) { return std::filesystem::exists(item.pdfFilePath); });
 
-  // calc the number of pdf items with a valid path
   const auto numPdfItems = std::distance(pdfItems.begin(), pdfItemsEnd2);
-  // calc the number of items without a valid path
   const auto numInvalidPdfItems = std::distance(pdfItemsEnd2, pdfItems.end());
 
-  fmt::print("Number of pdf items: {}\n", pdfItems.size());
-  fmt::print("Number of pdf items with a valid path: {}\n", numPdfItems);
+  fmt::print("Number of pdf items marked with a pdf attachement: {}\n", pdfItems.size());
+  fmt::print("Number of pdf items with a valid pdf path: {}\n", numPdfItems);
 
   // remove the items without a valid path
   pdfItems.erase(pdfItemsEnd2, pdfItems.end());
