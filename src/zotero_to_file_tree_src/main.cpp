@@ -1,10 +1,7 @@
-#include "SqlStatements.h"
-#include "test_sql_statements.h"
+#include "ZoteroDB.h"
 #include <CLI/CLI.hpp>
-#include <SQLiteCpp/SQLiteCpp.h>
 #include <filesystem>
 #include <fmt/format.h>
-#include <string>
 #include <string_view>
 
 namespace zotfiles
@@ -48,37 +45,84 @@ int main(int argc, char** argv)
   std::string libraryPathStr{""};
   app.add_option("-l,--lib_path", libraryPathStr, "Path to the zotero library. Default is the current directory.");
 
+  bool printZoteroDBInfo{false};
+  app.add_flag("--db_info", printZoteroDBInfo, "Print the zotero db info.");
+
   std::string outputDirStr{""};
   app.add_option("-o,--output_dir", outputDirStr, "Path to the output directory.")->required();
 
   CLI11_PARSE(app, argc, argv);
 
   auto zoteroDbPath = zotfiles::get_zotero_db_path(libraryPathStr);
-  if (!std::filesystem::exists(zoteroDbPath))
+  if (std::filesystem::exists(zoteroDbPath))
+  {
+    fmt::print("Zotero db path: {}\n", zoteroDbPath.string());
+  }
+  else
   {
     fmt::print("The zotero library path is invalid: {}\n", zoteroDbPath.string());
     return EXIT_FAILURE;
   }
 
-  auto outputDirPath = std::filesystem::path(outputDirStr);
-  if (std::filesystem::exists(outputDirPath))
+  if (printZoteroDBInfo)
   {
-    fmt::print("The output directory already exists: {}\n", outputDirPath.string());
-    return EXIT_FAILURE;
+    const zotfiles::ZoteroDBInfo zoteroDBInfo = zotfiles::zotero_db_info(zoteroDbPath);
+    fmt::print("\n{}\n", zotfiles::print_table(zoteroDBInfo));
   }
 
-  // TODO: std::filesystem::create_directories(outputDirPath);
-  // TODO: read items with pdf attachement form db
+  // TODO check if output dir is valid
+
+  //  auto outputDirPath = std::filesystem::path(outputDirStr);
+  //  if (std::filesystem::exists(outputDirPath))
+  //  {
+  //    fmt::print("The output directory already exists: {}\n", outputDirPath.string());
+  //    return EXIT_FAILURE;
+  //  }
 
   if (!zotfiles::is_supported_zotero_db(zoteroDbPath))
   {
     return EXIT_FAILURE;
   }
+  else
+  {
+    fmt::print("The zotero library is supported.\n");
+  }
 
-  zotfiles::ZoteroDBInfo zoteroDBInfo = zotfiles::zotero_db_info(zoteroDbPath);
-  std::stringstream ss;
-  ss << zoteroDBInfo;
-  std::cout << ss.str();
+  auto pdfItems = zotfiles::pdf_items(zoteroDbPath);
+
+  auto pdfItemsEnd =
+      std::remove_if(pdfItems.begin(), pdfItems.end(), [](const zotfiles::PdfItemWithPath& item) { return item.pdfItem.path.empty(); });
+  pdfItems.erase(pdfItemsEnd, pdfItems.end());
+
+  const std::string_view pdfItemPathPrefix = "storage:";
+  for (auto& item: pdfItems)
+  {
+    // check, if the path starts with the prefix pdfItemPathPrefix and remove it
+    if (item.pdfItem.path.find(pdfItemPathPrefix) == 0)
+    {
+      item.pdfItem.path = item.pdfItem.path.substr(pdfItemPathPrefix.size());
+    }
+
+    // build path to the pdf file using the path to the zotero db directory. Use the subdirectory "storage", in this directory, there must
+    // be a subdirectory with the name of the 'key' member of the pdf item.
+    item.pdfFilePath = zoteroDbPath.parent_path() / "storage" / item.pdfItem.key / item.pdfItem.path;
+  }
+
+  // Use std::partition to separate the pdf items with a valid path from the ones with an invalid path
+  auto pdfItemsEnd2 = std::partition(pdfItems.begin(),
+                                     pdfItems.end(),
+                                     [](const zotfiles::PdfItemWithPath& item) { return std::filesystem::exists(item.pdfFilePath); });
+
+  // calc the number of pdf items with a valid path
+  const auto numPdfItems = std::distance(pdfItems.begin(), pdfItemsEnd2);
+  // calc the number of items without a valid path
+  const auto numInvalidPdfItems = std::distance(pdfItemsEnd2, pdfItems.end());
+
+  fmt::print("Number of pdf items: {}\n", pdfItems.size());
+  fmt::print("Number of pdf items with a valid path: {}\n", numPdfItems);
+
+  // remove the items without a valid path
+  pdfItems.erase(pdfItemsEnd2, pdfItems.end());
 
   return 0;
 }
