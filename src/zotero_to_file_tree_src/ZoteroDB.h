@@ -1,9 +1,12 @@
 #ifndef ZOTERO_TO_FILE_TREE_ZOTERODB_H
 #define ZOTERO_TO_FILE_TREE_ZOTERODB_H
 
+#include "PDFItem.h"
+#include "ZoteroCollection.h"
 #include <cstdint>
 #include <filesystem>
-#include <ostream>
+#include <set>
+#include <unordered_map>
 
 namespace zotfiles
 {
@@ -22,29 +25,27 @@ struct ZoteroDBInfo
   std::uint32_t compatibility{};
 };
 
-std::string print_table(const ZoteroDBInfo& info);
-
 [[nodiscard]] ZoteroDBInfo supported_zotero_db_info();
-[[nodiscard]] ZoteroDBInfo zotero_db_info(const std::filesystem::path& zotero_db_path);
+[[nodiscard]] std::string print_table(const ZoteroDBInfo& info);
+
+[[nodiscard]] std::string_view zotero_db_name();
+[[nodiscard]] std::filesystem::path create_zotero_db_path(const std::string& library_path_str);
+[[nodiscard]] ZoteroDBInfo db_info(const std::filesystem::path& zotero_db_path);
 [[nodiscard]] bool is_supported_zotero_db(const std::filesystem::path& zotero_db_path);
 
-struct PdfItem
-{
-  std::int64_t itemID{};
-  std::string path{}; // member is named after path in the zotero db. This is not a real path, but the name of the pdf file stored.
-  std::string collectionName{};
-  std::int64_t collectionID{};
-  std::int64_t parentCollectionID{};
-  std::string key{};
-};
+// Retrieves all pdf attachments from the zotero db.
+[[nodiscard]] std::vector<PDFAttachment> pdf_attachments(const std::filesystem::path& zotero_db_path);
 
-struct PdfItemWithPath
-{
-  zotfiles::PdfItem pdfItem{};
-  std::filesystem::path pdfFilePath{};
-};
+// All collections that are parents of the given collectionIDs that are not already in the given collections.
+[[nodiscard]] std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& collectionIds,
+                                                            const std::filesystem::path& zotero_db_path);
 
-[[nodiscard]] std::vector<PdfItemWithPath> pdf_items(const std::filesystem::path& zotero_db_path);
+[[nodiscard]] std::vector<PDFItem> pdf_items(const std::vector<zotfiles::PDFAttachment>& pdfAttachments,
+                                             const std::filesystem::path& zoteroDbPath);
+void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::filesystem::path& zotero_db_path);
+// Collects all pdf item collections and their parent collections
+std::unordered_map<std::int64_t, ZoteroCollection> all_pdf_item_collections(const std::vector<PDFItem>& pdfItems,
+                                                                            const std::filesystem::path& zoteroDBPath);
 
 } // namespace zotfiles
 

@@ -1,6 +1,6 @@
 set(TARGET_NAME zotero_to_file_tree)
 
-add_executable(${TARGET_NAME} main.cpp test_sql_statements.cpp ZoteroDB.cpp)
+add_executable(${TARGET_NAME} zotero_to_file_tree.cpp ZoteroDB.cpp CollectionTree.cpp CollectionTree.h ZoteroCollection.h PDFItem.h PDFAttachment.h)
 target_link_libraries(${TARGET_NAME} PRIVATE CLI11::CLI11 fmt::fmt SQLiteCpp)
 
 set_target_properties(${TARGET_NAME}

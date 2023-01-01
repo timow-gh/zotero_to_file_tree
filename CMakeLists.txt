@@ -41,7 +41,8 @@ endif ()
 
 if (USE_SCCACHE)
     if (NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja")
-        message(FATAL_ERROR "sccache is only testet with Ninja.")
+        message(AUTHOR_WARNING "sccache is only testet with Ninja. Setting USE_SCCACHE to OFF.")
+        set(USE_SCCACHE OFF CACHE BOOL "" FORCE)
     endif ()
 
     find_program(CCACHE_PROGRAM sccache)
