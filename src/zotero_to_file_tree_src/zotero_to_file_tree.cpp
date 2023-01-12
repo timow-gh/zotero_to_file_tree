@@ -53,10 +53,25 @@ namespace zotfiles
                 {
                   for (const auto& collectionItem: pdfItem.collectionItems)
                   {
-                    collectionTree.add_pdf_item(collectionItem.collectionID,
-                                                pdfItem.pdfAttachment.itemID,
-                                                pdfItem.pdfAttachment.path,
-                                                pdfItem.pdfFilePath);
+                    auto collection = collectionTree.find(collectionItem.collectionID);
+                    if (collection)
+                    {
+                      auto iter = std::find_if(collection->collectionPDFItems.begin(),
+                                               collection->collectionPDFItems.end(),
+                                               [&pdfItem](const zotfiles::CollectionPDFItem& item)
+                                               { return item.pdfName == pdfItem.pdfAttachment.path; });
+                      if (iter == collection->collectionPDFItems.end())
+                      {
+                        collection->collectionPDFItems.emplace_back(
+                            zotfiles::CollectionPDFItem{pdfItem.pdfAttachment.itemID, pdfItem.pdfAttachment.path, pdfItem.pdfFilePath});
+                      }
+                      else
+                      {
+                        fmt::print("Duplicate pdf item found: {} in collection: {}. Skipping.\n",
+                                   pdfItem.pdfAttachment.path,
+                                   collection->collectionName);
+                      }
+                    }
                   }
                 });
 
@@ -66,19 +81,17 @@ namespace zotfiles
 [[nodiscard]] std::filesystem::path create_output_dir(const std::string& outputDirStr, bool overwriteOutputDir)
 {
   const std::filesystem::path outputDirPath = std::filesystem::path(outputDirStr);
-  if (std::filesystem::exists(outputDirPath))
+
+  bool outputDirExists = std::filesystem::exists(outputDirPath);
+  if (outputDirExists && overwriteOutputDir)
   {
-    if (!overwriteOutputDir)
-    {
-      fmt::print("Aborting. The output directory already exists: {}\n", outputDirPath.string());
-      return {};
-    }
-    else
-    {
-      fmt::print("The output directory already exists and will be overwritten: {}\n", outputDirPath.string());
-      std::filesystem::remove_all(outputDirPath);
-      std::filesystem::create_directories(outputDirPath);
-    }
+    fmt::print("The output directory already exists and will be overwritten: {}\n", outputDirPath.string());
+    std::filesystem::remove_all(outputDirPath);
+  }
+
+  if (!outputDirExists)
+  {
+    std::filesystem::create_directories(outputDirPath);
   }
   return outputDirPath;
 }
@@ -100,11 +113,11 @@ int main(int argc, char** argv)
   bool printZoteroDBInfo{false};
   app.add_flag("--print_db_info", printZoteroDBInfo, "Print the zotero db info.");
 
-  bool overwriteOutputDir{false};
-  app.add_flag("--overwrite", overwriteOutputDir, "Overwrite the output directory if it exists.");
+  bool overwriteAll{false};
+  app.add_flag("--overwrite_all", overwriteAll, "Overwrite the output directory if it exists.");
 
-  bool allowDuplicatePDFs{false};
-  app.add_flag("--allow_duplicate_pdfs", allowDuplicatePDFs, "Allow duplicate pdfs in the output directory tree.");
+  bool skipExistingFiles{false};
+  app.add_flag("--skip_existing", skipExistingFiles, "Skip existing files if they exist in the output directory.");
 
   CLI11_PARSE(app, argc, argv);
 
@@ -125,9 +138,10 @@ int main(int argc, char** argv)
     fmt::print("\n{}\n", zotfiles::print_table(zoteroDBInfo));
   }
 
-  std::filesystem::path outputDirPath = zotfiles::create_output_dir(outputDirStr, overwriteOutputDir);
+  std::filesystem::path outputDirPath = zotfiles::create_output_dir(outputDirStr, overwriteAll);
   if (outputDirPath.empty())
   {
+    fmt::print("The output directory path is not valid.\n");
     return EXIT_FAILURE;
   }
 
@@ -140,9 +154,9 @@ int main(int argc, char** argv)
 
   zotfiles::CollectionTree collectionTree = create_collectiontree(pdfItems, zoteroDbPath);
 
-  std::filesystem::create_directories(outputDirPath);
+  std::size_t writtenPDFs = collectionTree.write_pdfs(outputDirPath, skipExistingFiles);
 
-  collectionTree.write_pdfs(outputDirPath);
+  fmt::print("Number of pdfs written: {}\n", writtenPDFs);
 
   return 0;
 }

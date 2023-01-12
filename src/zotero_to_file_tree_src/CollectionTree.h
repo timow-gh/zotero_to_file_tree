@@ -40,21 +40,12 @@ public:
   // Build the collection for a given set of collection nodes.
   static CollectionTree build(std::unordered_map<std::int64_t, std::shared_ptr<CollectionNode>> collectionNodes);
 
-  template <typename... PDFItemArgs>
-  void add_pdf_item(std::int64_t collectionID, PDFItemArgs&&... pdfItemArgs)
-  {
-    auto collectionNode = find(collectionID);
-    if (collectionNode)
-    {
-      collectionNode->collectionPDFItems.emplace_back(std::forward<PDFItemArgs>(pdfItemArgs)...);
-    }
-  }
+  std::shared_ptr<CollectionNode> find(std::int64_t collectionID) const;
 
   // Write the pdf items to the given output directory with a directory tree structure matching the collection tree.
-  void write_pdfs(std::filesystem::path outputDir);
+  std::size_t write_pdfs(std::filesystem::path outputDir, bool skipExistingFiles);
 
 private:
-  std::shared_ptr<CollectionNode> find(std::int64_t collectionID) const;
   static bool erase_collection_node(std::vector<std::shared_ptr<CollectionNode>>& collectionNodes, const CollectionNode& collectionNode);
   bool remove(const CollectionNode& collectionNode);
 };

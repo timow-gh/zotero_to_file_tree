@@ -93,7 +93,7 @@ CollectionTree CollectionTree::build(std::unordered_map<std::int64_t, std::share
   return collectionTree;
 }
 
-void CollectionTree::write_pdfs(std::filesystem::path outputDir)
+std::size_t CollectionTree::write_pdfs(std::filesystem::path outputDir, bool skipExistingFiles)
 {
   struct NodePathPair
   {
@@ -107,6 +107,8 @@ void CollectionTree::write_pdfs(std::filesystem::path outputDir)
   {
     nodePathPairs.emplace_back(node.get(), std::filesystem::path(node->collectionName));
   }
+
+  std::size_t writtenPDFs{0};
 
   while (!nodePathPairs.empty())
   {
@@ -123,8 +125,25 @@ void CollectionTree::write_pdfs(std::filesystem::path outputDir)
 
     for (const auto& pdfItem: nodePathPair.node->collectionPDFItems)
     {
-      std::filesystem::copy(pdfItem.pdfFilePath, outputDir / nodePathPair.relPath / pdfItem.pdfName);
+      std::filesystem::path targetFilePath = outputDir / nodePathPair.relPath / pdfItem.pdfName;
+      if (skipExistingFiles && std::filesystem::exists(targetFilePath))
+      {
+        continue;
+      }
+
+      try
+      {
+        std::filesystem::copy(pdfItem.pdfFilePath, targetFilePath);
+      }
+      catch (std::exception& e)
+      {
+        fmt::print("Error copying PDFs for collection '{}': {}\r ", nodePathPair.node->collectionName, e.what());
+      }
+
+      ++writtenPDFs;
     }
   }
+
+  return writtenPDFs;
 }
 } // namespace zotfiles
