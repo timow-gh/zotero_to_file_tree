@@ -137,7 +137,7 @@ std::size_t CollectionTree::write_pdfs(std::filesystem::path outputDir, bool ski
       }
       catch (std::exception& e)
       {
-        fmt::print("Error copying PDFs for collection '{}': {}\r ", nodePathPair.node->collectionName, e.what());
+        fmt::print("Error copying PDF in collection: '{}',\n'{}'\n\n", nodePathPair.node->collectionName, e.what());
       }
 
       ++writtenPDFs;
