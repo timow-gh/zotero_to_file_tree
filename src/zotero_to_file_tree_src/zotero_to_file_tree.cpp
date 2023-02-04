@@ -18,7 +18,7 @@ namespace zotfiles
 
 [[nodiscard]] std::vector<PDFItem> create_pdfitems(const std::filesystem::path& zoteroDbPath)
 {
-  const std::vector<zotfiles::PDFAttachment> pdfAttachments = zotfiles::pdf_attachments(zoteroDbPath);
+  const std::vector<zotfiles::ZoteroPDFAttachment> pdfAttachments = zotfiles::pdf_attachments(zoteroDbPath);
   std::vector<zotfiles::PDFItem> pdfItems = zotfiles::pdf_items(pdfAttachments, zoteroDbPath);
   auto removeEndIter = std::remove_if(pdfItems.begin(),
                                       pdfItems.end(),
@@ -96,6 +96,34 @@ namespace zotfiles
   return outputDirPath;
 }
 
+/*
+ * @brief Creates the path to the zotero db file.
+ *
+ * If the @param library_path_str doesn't exist, the current directory is used to create the zotero db file path by appending the standard
+ * zotero db file name.
+ * If the @param library_path_str is a directory, the standard zotero db file name is appended to the path and returned as the zotero db
+ * file path.
+ *
+ * @param library_path_str String containing the path to the zotero library or the directory with the zotero db file.
+ * @return The std::filesystem::path to the zotero db file.
+ */
+[[nodiscard]] std::filesystem::path create_zotero_db_path(const std::string& library_path_str)
+{
+  std::filesystem::path zotero_lib_path = std::filesystem::path(library_path_str);
+
+  if (!std::filesystem::exists(zotero_lib_path))
+  {
+    zotero_lib_path = std::filesystem::current_path() / standard_zotero_db_name();
+  }
+
+  if (std::filesystem::is_directory(zotero_lib_path))
+  {
+    zotero_lib_path /= standard_zotero_db_name();
+  }
+
+  return zotero_lib_path;
+}
+
 } // namespace zotfiles
 
 int main(int argc, char** argv)
@@ -132,10 +160,18 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
+  if (!zotfiles::is_supported_zotero_db(zoteroDbPath))
+  {
+    fmt::print("The given zotero db is not supported.\n");
+    fmt::print("Currently supported zotero db:");
+    fmt::print("\n{}\n", zotfiles::formatted_zotero_db_info(zotfiles::supported_zotero_db_info()));
+    return EXIT_FAILURE;
+  }
+
   if (printZoteroDBInfo)
   {
-    const zotfiles::ZoteroDBInfo zoteroDBInfo = zotfiles::db_info(zoteroDbPath);
-    fmt::print("\n{}\n", zotfiles::print_table(zoteroDBInfo));
+    const zotfiles::ZoteroDBInfo zoteroDBInfo = zotfiles::zotero_db_info(zoteroDbPath);
+    fmt::print("\n{}\n", zotfiles::formatted_zotero_db_info(zoteroDBInfo));
   }
 
   std::filesystem::path outputDirPath = zotfiles::create_output_dir(outputDirStr, overwriteAll);
@@ -152,10 +188,10 @@ int main(int argc, char** argv)
   const auto numInvalidPdfItems = numPdfItems - pdfItems.size();
   fmt::print("Number of pdf items with an invalid pdf path: {}\n", numInvalidPdfItems);
 
+  fmt::print("\n");
   zotfiles::CollectionTree collectionTree = create_collectiontree(pdfItems, zoteroDbPath);
-
   std::size_t writtenPDFs = collectionTree.write_pdfs(outputDirPath, skipExistingFiles);
-
+  fmt::print("\nNumber of existing pdfs skipped: {}\n", numPdfItems - writtenPDFs);
   fmt::print("Number of pdfs written: {}\n", writtenPDFs);
 
   return 0;

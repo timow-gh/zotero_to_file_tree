@@ -7,6 +7,13 @@
 namespace zotfiles
 {
 
+/*
+ * @brief Represents a Zotero collection.
+ *
+ * Zotero collections are a tree structure that is displayed in the Zotero client.
+ *
+ * @member collectionID The collectionID is the primary key of the collections table.
+ */
 struct ZoteroCollection
 {
   std::int64_t collectionID{};

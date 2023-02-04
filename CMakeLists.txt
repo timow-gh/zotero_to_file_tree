@@ -19,10 +19,17 @@ set(ENABLE_DEVELOPER_MODE
         TRUE
         CACHE BOOL "Enable 'developer mode'")
 
-option(USE_SCCACHE "Use sccache" ON)
-if (ENABLE_DEVELOPER_MODE)
+if ((CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR))
+    set(IS_TOP_LEVEL_PROJECT TRUE)
+else ()
+    set(IS_TOP_LEVEL_PROJECT FALSE)
+endif ()
+
+if (IS_TOP_LEVEL_PROJECT)
+    option(${PROJECT_NAME}_USE_SCCACHE "Use sccache" ON)
     option(${PROJECT_NAME}_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
     option(${PROJECT_NAME}_STATIC_ANALYSIS "" ON)
+    option(${PROJECT_NAME}_TESTS "" ON)
 
     # check if the file CPMSourceVariable.cmake exists in project root
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CPMSourceVariable.cmake")
@@ -35,8 +42,10 @@ if (ENABLE_DEVELOPER_MODE)
         message(AUTHOR_WARNING "CPM_SOURCE_CACHE not set. The source files are downloaded for each project.")
     endif ()
 else ()
+    option(${PROJECT_NAME}_USE_SCCACHE "Use sccache" OFF)
     option(${PROJECT_NAME}_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
     option(${PROJECT_NAME}_STATIC_ANALYSIS "" OFF)
+    option(${PROJECT_NAME}_TESTS "" OFF)
 endif ()
 
 if (USE_SCCACHE)

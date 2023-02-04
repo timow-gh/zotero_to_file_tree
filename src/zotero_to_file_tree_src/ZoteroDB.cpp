@@ -8,61 +8,6 @@
 
 namespace zotfiles
 {
-ZoteroDBInfo supported_zotero_db_info()
-{
-  static constexpr ZoteroDBInfo supported_zotero_db_info{
-      120,        // userdata
-      18,         // triggers
-      1668085253, // translators
-      32,         // system
-      1668085253, // styles
-      1671627457, // repository
-      21,         // globalSchema
-      74,         // delete
-      7           // compatibility;
-  };
-  return supported_zotero_db_info;
-}
-
-std::string print_table(const ZoteroDBInfo& info)
-{
-  std::string table;
-  table += fmt::format("ZoteroDBInfo:\n");
-  table += fmt::format("{:-<29}\n", "");
-  table += fmt::format("|{:<15}|{:>11}|\n", "userdata", info.userdata);
-  table += fmt::format("|{:<15}|{:>11}|\n", "triggers", info.triggers);
-  table += fmt::format("|{:<15}|{:>11}|\n", "translators", info.translators);
-  table += fmt::format("|{:<15}|{:>11}|\n", "system", info.system);
-  table += fmt::format("|{:<15}|{:>11}|\n", "styles", info.styles);
-  table += fmt::format("|{:<15}|{:>11}|\n", "repository", info.repository);
-  table += fmt::format("|{:<15}|{:>11}|\n", "globalSchema", info.globalSchema);
-  table += fmt::format("|{:<15}|{:>11}|\n", "deletes", info.deletes);
-  table += fmt::format("|{:<15}|{:>11}|\n", "compatibility", info.compatibility);
-  table += fmt::format("{:-<29}\n", "");
-  return table;
-}
-
-std::string_view zotero_db_name()
-{
-  static constexpr std::string_view zotero_db_name = "zotero.sqlite";
-  return zotero_db_name;
-}
-
-std::filesystem::path create_zotero_db_path(const std::string& library_path_str)
-{
-  std::filesystem::path zotero_lib_path = std::filesystem::path(library_path_str);
-  if (!std::filesystem::exists(zotero_lib_path))
-  {
-    zotero_lib_path = std::filesystem::current_path() / zotero_db_name();
-  }
-
-  if (std::filesystem::is_directory(zotero_lib_path))
-  {
-    zotero_lib_path /= zotero_db_name();
-  }
-
-  return zotero_lib_path;
-}
 
 static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::int32_t val)
 {
@@ -84,54 +29,59 @@ static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::i
   }
 }
 
-ZoteroDBInfo db_info(const std::filesystem::path& zotero_db_path)
+// SQL querie to get the parent collections of the given pdf item ids
+template <typename ForwardIter>
+static std::string item_collections_query(ForwardIter itemIDBegin, ForwardIter itemIDEnd)
 {
-  assert(std::filesystem::exists(zotero_db_path));
+  static const std::string queryString = fmt::format(
+      "SELECT \n"
+      "items.itemID,\n"
+      "collectionItems.collectionID,\n"
+      "collections.parentCollectionID,\n"
+      "collections.collectionName\n"
+      "FROM \n"
+      "items\n"
+      "LEFT JOIN collectionItems\n"
+      "ON collectionItems.itemID = items.itemID\n"
+      "LEFT JOIN collections\n"
+      "ON collections.collectionID = collectionItems.collectionID\n");
 
-  ZoteroDBInfo zotero_db_info;
-  try
-  {
-    // Open a database file in create/write mode
-    SQLite::Database db(zotero_db_path, SQLite::OPEN_READONLY);
-
-    auto query = SQLite::Statement(db, fmt::format("SELECT * FROM version"));
-    while (query.executeStep())
-    {
-      // Get the collection name
-      if (!query.isColumnNull(0))
-      {
-        insertDBValue(zotero_db_info, query.getColumn(0).getText(), query.getColumn(1).getInt());
-      }
-    }
-  }
-  catch (std::exception& e)
-  {
-    fmt::print("SQLite exception: {}\n", std::string(e.what()));
-    std::abort();
-  }
-
-  return zotero_db_info;
+  return queryString + fmt::format("WHERE items.itemID IN ({})", fmt::join(itemIDBegin, itemIDEnd, ","));
 }
 
-bool is_supported_zotero_db(const std::filesystem::path& zotero_db_path)
-{
-  auto zoteroDBInfo = db_info(zotero_db_path);
-  auto supportedZoteroDBInfo = supported_zotero_db_info();
+class PDFItemIDsPolicy {
+  std::vector<std::int64_t> pdfItemIDs;
 
-  if (zoteroDBInfo.userdata != supportedZoteroDBInfo.userdata)
+public:
+  using const_iterator = std::vector<std::int64_t>::const_iterator;
+
+  template <typename Iter>
+  void operator()(Iter begin, Iter end)
   {
-    fmt::print("The zotero library is not supported: userdata version mismatch.\n");
-    return false;
+    pdfItemIDs.reserve(std::distance(begin, end));
+    collect_ids<PDFItem>(begin, end, std::back_inserter(pdfItemIDs));
   }
 
-  if (zoteroDBInfo.globalSchema != supportedZoteroDBInfo.globalSchema)
+  [[nodiscard]] const_iterator cbegin() const { return pdfItemIDs.cbegin(); }
+  [[nodiscard]] const_iterator cend() const { return pdfItemIDs.cend(); }
+};
+
+class PDFParentItemIdsPolicy {
+  std::vector<std::int64_t> pdfParentItemIDs;
+
+public:
+  using const_iterator = std::vector<std::int64_t>::const_iterator;
+
+  template <typename Iter>
+  void operator()(Iter begin, Iter end)
   {
-    fmt::print("The zotero library is not supported: globalSchema version mismatch.\n");
-    return false;
+    pdfParentItemIDs.reserve(std::distance(begin, end));
+    collect_parent_ids<PDFItem>(begin, end, std::back_inserter(pdfParentItemIDs));
   }
 
-  return true;
-}
+  [[nodiscard]] const_iterator cbegin() const { return pdfParentItemIDs.cbegin(); }
+  [[nodiscard]] const_iterator cend() const { return pdfParentItemIDs.cend(); }
+};
 
 template <typename Item, typename ForwardIter, typename OutputIter>
 void collect_ids(ForwardIter first, ForwardIter last, OutputIter outPutIter)
@@ -159,7 +109,100 @@ void collect_parent_ids(ForwardIter first, ForwardIter last, OutputIter outPutIt
   }
 }
 
-std::vector<PDFAttachment> pdf_attachments(const std::filesystem::path& zotero_db_path)
+std::string_view standard_zotero_db_name()
+{
+  static constexpr std::string_view zotero_db_name = "zotero.sqlite";
+  return zotero_db_name;
+}
+
+ZoteroDBInfo zotero_db_info(const std::filesystem::path& zotero_db_file_path)
+{
+  if (!std::filesystem::exists(zotero_db_file_path))
+  {
+    fmt::print("Zotero DB file does not exist: {}\n", zotero_db_file_path.string());
+    std::abort();
+  }
+
+  ZoteroDBInfo zotero_db_info;
+  try
+  {
+    // Open a database file in create/write mode
+    SQLite::Database db(zotero_db_file_path, SQLite::OPEN_READONLY);
+
+    auto query = SQLite::Statement(db, fmt::format("SELECT * FROM version"));
+    while (query.executeStep())
+    {
+      // Get the collection name
+      if (!query.isColumnNull(0))
+      {
+        insertDBValue(zotero_db_info, query.getColumn(0).getText(), query.getColumn(1).getInt());
+      }
+    }
+  }
+  catch (std::exception& e)
+  {
+    fmt::print("SQLite exception: {}\n", std::string(e.what()));
+    std::abort();
+  }
+
+  return zotero_db_info;
+}
+
+std::string formatted_zotero_db_info(const ZoteroDBInfo& info)
+{
+  std::string table;
+  table += fmt::format("ZoteroDBInfo:\n");
+  table += fmt::format("{:-<29}\n", "");
+  table += fmt::format("|{:<15}|{:>11}|\n", "userdata", info.userdata);
+  table += fmt::format("|{:<15}|{:>11}|\n", "triggers", info.triggers);
+  table += fmt::format("|{:<15}|{:>11}|\n", "translators", info.translators);
+  table += fmt::format("|{:<15}|{:>11}|\n", "system", info.system);
+  table += fmt::format("|{:<15}|{:>11}|\n", "styles", info.styles);
+  table += fmt::format("|{:<15}|{:>11}|\n", "repository", info.repository);
+  table += fmt::format("|{:<15}|{:>11}|\n", "globalSchema", info.globalSchema);
+  table += fmt::format("|{:<15}|{:>11}|\n", "deletes", info.deletes);
+  table += fmt::format("|{:<15}|{:>11}|\n", "compatibility", info.compatibility);
+  table += fmt::format("{:-<29}\n", "");
+  return table;
+}
+
+ZoteroDBInfo supported_zotero_db_info()
+{
+  static constexpr ZoteroDBInfo supported_zotero_db_info{
+      120,        // userdata
+      18,         // triggers
+      1668085253, // translators
+      32,         // system
+      1668085253, // styles
+      1671627457, // repository
+      21,         // globalSchema
+      74,         // delete
+      7           // compatibility;
+  };
+  return supported_zotero_db_info;
+}
+
+bool is_supported_zotero_db(const std::filesystem::path& zotero_db_path)
+{
+  auto zoteroDBInfo = zotero_db_info(zotero_db_path);
+  auto supportedZoteroDBInfo = supported_zotero_db_info();
+
+  if (zoteroDBInfo.userdata != supportedZoteroDBInfo.userdata)
+  {
+    fmt::print("The zotero library is not supported: userdata version mismatch.\n");
+    return false;
+  }
+
+  if (zoteroDBInfo.globalSchema != supportedZoteroDBInfo.globalSchema)
+  {
+    fmt::print("The zotero library is not supported: globalSchema version mismatch.\n");
+    return false;
+  }
+
+  return true;
+}
+
+std::vector<ZoteroPDFAttachment> pdf_attachments(const std::filesystem::path& zotero_db_path)
 {
   static const std::string queryString = fmt::format(
       "SELECT \n"
@@ -173,7 +216,7 @@ std::vector<PDFAttachment> pdf_attachments(const std::filesystem::path& zotero_d
       "ON items.itemID = itemAttachments.itemID\n"
       "WHERE itemAttachments.contentType = 'application/pdf'");
 
-  std::vector<PDFAttachment> pdf_items;
+  std::vector<ZoteroPDFAttachment> pdf_items;
   try
   {
     const SQLite::Database db(zotero_db_path, SQLite::OPEN_READONLY);
@@ -240,14 +283,14 @@ std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& coll
   return result;
 }
 
-std::vector<PDFItem> pdf_items(const std::vector<zotfiles::PDFAttachment>& pdfAttachments, const std::filesystem::path& zoteroDbPath)
+std::vector<PDFItem> pdf_items(const std::vector<zotfiles::ZoteroPDFAttachment>& pdfAttachments, const std::filesystem::path& zoteroDbPath)
 {
   std::vector<PDFItem> pdfItems;
   pdfItems.reserve(pdfAttachments.size());
   std::transform(pdfAttachments.begin(),
                  pdfAttachments.end(),
                  std::back_inserter(pdfItems),
-                 [](const zotfiles::PDFAttachment& pdfAttachment) { return PDFItem{pdfAttachment}; });
+                 [](const zotfiles::ZoteroPDFAttachment& pdfAttachment) { return PDFItem{pdfAttachment}; });
 
   std::vector<std::filesystem::path> pdfFiles;
   const std::string_view pdfItemPathPrefix = "storage:";
@@ -288,60 +331,6 @@ std::vector<PDFItem> pdf_items(const std::vector<zotfiles::PDFAttachment>& pdfAt
 
   return pdfItems;
 }
-
-// SQL querie to get the parent collections of the given pdf item ids
-template <typename ForwardIter>
-static std::string item_collections_query(ForwardIter itemIDBegin, ForwardIter itemIDEnd)
-{
-  static const std::string queryString = fmt::format(
-      "SELECT \n"
-      "items.itemID,\n"
-      "collectionItems.collectionID,\n"
-      "collections.parentCollectionID,\n"
-      "collections.collectionName\n"
-      "FROM \n"
-      "items\n"
-      "LEFT JOIN collectionItems\n"
-      "ON collectionItems.itemID = items.itemID\n"
-      "LEFT JOIN collections\n"
-      "ON collections.collectionID = collectionItems.collectionID\n");
-
-  return queryString + fmt::format("WHERE items.itemID IN ({})", fmt::join(itemIDBegin, itemIDEnd, ","));
-}
-
-class PDFItemIDsPolicy {
-  std::vector<std::int64_t> pdfItemIDs;
-
-public:
-  using const_iterator = std::vector<std::int64_t>::const_iterator;
-
-  template <typename Iter>
-  void operator()(Iter begin, Iter end)
-  {
-    pdfItemIDs.reserve(std::distance(begin, end));
-    collect_ids<PDFItem>(begin, end, std::back_inserter(pdfItemIDs));
-  }
-
-  [[nodiscard]] const_iterator cbegin() const { return pdfItemIDs.cbegin(); }
-  [[nodiscard]] const_iterator cend() const { return pdfItemIDs.cend(); }
-};
-
-class PDFParentItemIdsPolicy {
-  std::vector<std::int64_t> pdfParentItemIDs;
-
-public:
-  using const_iterator = std::vector<std::int64_t>::const_iterator;
-
-  template <typename Iter>
-  void operator()(Iter begin, Iter end)
-  {
-    pdfParentItemIDs.reserve(std::distance(begin, end));
-    collect_parent_ids<PDFItem>(begin, end, std::back_inserter(pdfParentItemIDs));
-  }
-
-  [[nodiscard]] const_iterator cbegin() const { return pdfParentItemIDs.cbegin(); }
-  [[nodiscard]] const_iterator cend() const { return pdfParentItemIDs.cend(); }
-};
 
 template <typename ItemIDsPolicy, typename ForwardIter>
 static std::unordered_map<std::int64_t, std::vector<ZoteroCollection>>
@@ -384,10 +373,6 @@ retrieve_item_collections(ForwardIter begin, ForwardIter end, const std::filesys
   return itemCollectionMap;
 }
 
-/*
- * Most pdf attachment items have a parent item that holds the information about the collection hierarchy.
- * Create one PDFItem that holds all relevant information about the pdf attachment and the collection its belonging to.
- */
 void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::filesystem::path& zotero_db_path)
 {
   // Find collections of the pdf items.
