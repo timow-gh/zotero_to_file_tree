@@ -141,8 +141,10 @@ int main(int argc, char** argv)
   bool printZoteroDBInfo{false};
   app.add_flag("--print_db_info", printZoteroDBInfo, "Print the zotero db info.");
 
-  bool overwriteAll{false};
-  app.add_flag("--overwrite_all", overwriteAll, "Overwrite the output directory if it exists.");
+  bool overwriteOutputDir{false};
+  app.add_flag("--overwrite_output_dir",
+               overwriteOutputDir,
+               "Overwrite the output directory if it exists. All files in the output directory will be deleted.");
 
   bool skipExistingFiles{false};
   app.add_flag("--skip_existing", skipExistingFiles, "Skip existing files if they exist in the output directory.");
@@ -174,7 +176,7 @@ int main(int argc, char** argv)
     fmt::print("\n{}\n", zotfiles::formatted_zotero_db_info(zoteroDBInfo));
   }
 
-  std::filesystem::path outputDirPath = zotfiles::create_output_dir(outputDirStr, overwriteAll);
+  std::filesystem::path outputDirPath = zotfiles::create_output_dir(outputDirStr, overwriteOutputDir);
   if (outputDirPath.empty())
   {
     fmt::print("The output directory path is not valid.\n");
