@@ -7,8 +7,8 @@
 namespace zotfiles
 {
 
-/*
- * @brief Represents a Zotero collection.
+/**
+ *\brief Represents a Zotero collection.
  *
  * Zotero collections are a tree structure that is displayed in the Zotero client.
  *

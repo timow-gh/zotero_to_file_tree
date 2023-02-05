@@ -48,10 +48,10 @@ else ()
     option(${PROJECT_NAME}_TESTS "" OFF)
 endif ()
 
-if (USE_SCCACHE)
+if (${PROJECT_NAME}_USE_SCCACHE)
     if (NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja")
-        message(AUTHOR_WARNING "sccache is only testet with Ninja. Setting USE_SCCACHE to OFF.")
-        set(USE_SCCACHE OFF CACHE BOOL "" FORCE)
+        message(AUTHOR_WARNING "sccache is only testet with Ninja. Setting ${PROJECT_NAME}_USE_SCCACHE to OFF.")
+        set(${PROJECT_NAME}_USE_SCCACHE OFF CACHE BOOL "" FORCE)
     endif ()
 
     find_program(CCACHE_PROGRAM sccache)
@@ -63,16 +63,40 @@ if (USE_SCCACHE)
         set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
         set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
     else ()
-        message(FATAL_ERROR "sccache not found. Please install it or disable USE_SCCACHE")
+        message(FATAL_ERROR "sccache not found. Please install it or disable ${PROJECT_NAME}_USE_SCCACHE")
     endif ()
 
     include(cmake/sccache_setup.cmake)
     fix_msvc_ninja_compile_flags()
 endif ()
 
-message(STATUS "USE_SCCACHE: ${USE_SCCACHE}")
+message(STATUS "${PROJECT_NAME}_USE_SCCACHE: ${${PROJECT_NAME}_USE_SCCACHE}")
 message(STATUS "${PROJECT_NAME}_WARNINGS_AS_ERRORS: ${${PROJECT_NAME}_WARNINGS_AS_ERRORS}")
 message(STATUS "${PROJECT_NAME}_STATIC_ANALYSIS: ${${PROJECT_NAME}_STATIC_ANALYSIS}")
+
+find_program(DOXYGEN_EXECUTABLE doxygen)
+
+if (NOT DOXYGEN_EXECUTABLE)
+    message(AUTHOR_WARNING "Doxygen not found. Documentation will not be generated.")
+endif ()
+
+# if doxygen is found, generate the documentation
+if (DOXYGEN_EXECUTABLE)
+    message(STATUS "Doxygen found. Documentation will be generated.")
+    message(STATUS "DOXGEN_PROGRAM=${DOXGEN_PROGRAM}")
+
+    # configure doxygen file
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile @ONLY)
+
+    # Define the custom target for building the documentation
+    add_custom_target(
+            docs ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM
+    )
+endif ()
 
 add_subdirectory(dependencies)
 

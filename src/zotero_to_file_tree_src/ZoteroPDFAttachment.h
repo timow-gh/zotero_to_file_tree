@@ -7,8 +7,8 @@
 namespace zotfiles
 {
 
-/*
- * @brief Represents a zotero db entry that is marked to have a pdf attachment.
+/**
+ *\brief Represents a zotero db entry that is marked to have a pdf attachment.
  *
  * A ZoteroPDFAttachment represents an item in the zotero db that may have one or more pdf files attached.
  *

@@ -9,8 +9,8 @@
 namespace zotfiles
 {
 
-/*
- * @brief Represents a pdf file in the storage directory.
+/**
+ *\brief Represents a pdf file in the storage directory.
  *
  * @member pdfAttachment The entry in the zotero db that represents the pdf file.
  * @member pdfFilePath The absolute path to the pdf file on the file system.

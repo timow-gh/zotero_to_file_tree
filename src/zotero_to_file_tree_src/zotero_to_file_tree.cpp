@@ -96,13 +96,13 @@ namespace zotfiles
   return outputDirPath;
 }
 
-/*
- * @brief Creates the path to the zotero db file.
+/**
+ *\brief Creates the path to the zotero db file.
  *
- * If the @param library_path_str doesn't exist, the current directory is used to create the zotero db file path by appending the standard
- * zotero db file name.
- * If the @param library_path_str is a directory, the standard zotero db file name is appended to the path and returned as the zotero db
- * file path.
+ * If the path given by library_path_str doesn't exist, the current directory is used to create the zotero db file path by appending the
+ * standard zotero db file name.
+ * If the path given by library_path_str is a directory, the standard zotero db file name is appended to the path and returned as the
+ *  zotero db file path.
  *
  * @param library_path_str String containing the path to the zotero library or the directory with the zotero db file.
  * @return The std::filesystem::path to the zotero db file.
