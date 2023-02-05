@@ -11,14 +11,11 @@ namespace zotfiles
  *\brief Represents a Zotero collection.
  *
  * Zotero collections are a tree structure that is displayed in the Zotero client.
- *
- * @member collectionID The collectionID is the primary key of the collections table.
  */
 struct ZoteroCollection
 {
-  std::int64_t collectionID{};
-  // -1 if the collection has no parent collection
-  std::int64_t parentCollectionID{};
+  std::int64_t collectionID{}; /**< collectionID The collectionID is the primary key of the collections table. */
+  std::int64_t parentCollectionID{}; /**< -1 if the collection has no parent collection */
   std::string collectionName;
 
   auto operator<=>(const ZoteroCollection& other) const { return collectionID <=> other.collectionID; }
