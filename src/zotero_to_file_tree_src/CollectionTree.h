@@ -42,8 +42,13 @@ public:
 
   std::shared_ptr<CollectionNode> find(std::int64_t collectionID) const;
 
-  // Write the pdf items to the given output directory with a directory tree structure matching the collection tree.
-  std::size_t write_pdfs(std::filesystem::path outputDir, bool skipExistingFiles);
+  /** @brief Write the pdfs to the output directory.
+   *
+   * Write the pdf items to the given output directory with a directory tree structure matching the collection tree.
+   *
+   *  @return {written, skipped} The number of pdfs written and skipped.
+   */
+  std::pair<std::size_t, std::size_t> write_pdfs(std::filesystem::path outputDir, bool overwriteExistingFiles);
 
 private:
   static bool erase_collection_node(std::vector<std::shared_ptr<CollectionNode>>& collectionNodes, const CollectionNode& collectionNode);

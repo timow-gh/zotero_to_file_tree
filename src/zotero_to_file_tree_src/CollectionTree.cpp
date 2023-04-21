@@ -93,7 +93,7 @@ CollectionTree CollectionTree::build(std::unordered_map<std::int64_t, std::share
   return collectionTree;
 }
 
-std::size_t CollectionTree::write_pdfs(std::filesystem::path outputDir, bool skipExistingFiles)
+std::pair<std::size_t, std::size_t> CollectionTree::write_pdfs(std::filesystem::path outputDir, bool overwriteExistingFiles)
 {
   struct NodePathPair
   {
@@ -109,6 +109,7 @@ std::size_t CollectionTree::write_pdfs(std::filesystem::path outputDir, bool ski
   }
 
   std::size_t writtenPDFs{0};
+  std::size_t skippedPDFs{0};
 
   while (!nodePathPairs.empty())
   {
@@ -126,24 +127,29 @@ std::size_t CollectionTree::write_pdfs(std::filesystem::path outputDir, bool ski
     for (const auto& pdfItem: nodePathPair.node->collectionPDFItems)
     {
       std::filesystem::path targetFilePath = outputDir / nodePathPair.relPath / pdfItem.pdfName;
-      if (skipExistingFiles && std::filesystem::exists(targetFilePath))
+      bool targetFileExists = std::filesystem::exists(targetFilePath);
+      if (!overwriteExistingFiles && targetFileExists)
       {
+        ++skippedPDFs;
         continue;
       }
 
       try
       {
+        if (targetFileExists)
+        {
+          std::filesystem::remove(targetFilePath);
+        }
         std::filesystem::copy(pdfItem.pdfFilePath, targetFilePath);
+        ++writtenPDFs;
       }
       catch (std::exception& e)
       {
         fmt::print("Error copying PDF in collection: '{}',\n'{}'\n\n", nodePathPair.node->collectionName, e.what());
       }
-
-      ++writtenPDFs;
     }
   }
 
-  return writtenPDFs;
+  return {writtenPDFs, skippedPDFs};
 }
 } // namespace zotfiles

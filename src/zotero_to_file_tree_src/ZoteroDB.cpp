@@ -151,7 +151,6 @@ ZoteroDBInfo zotero_db_info(const std::filesystem::path& zoteroDBPath)
 std::string formatted_zotero_db_info(const ZoteroDBInfo& info)
 {
   std::string table;
-  table += fmt::format("ZoteroDBInfo:\n");
   table += fmt::format("{:-<29}\n", "");
   table += fmt::format("|{:<15}|{:>11}|\n", "userdata", info.userdata);
   table += fmt::format("|{:<15}|{:>11}|\n", "triggers", info.triggers);
@@ -171,11 +170,11 @@ ZoteroDBInfo supported_zotero_db_info()
   static constexpr ZoteroDBInfo supported_zotero_db_info{
       120,        // userdata
       18,         // triggers
-      1668085253, // translators
+      1682063609, // translators
       32,         // system
-      1668085253, // styles
-      1671627457, // repository
-      21,         // globalSchema
+      1682063609, // styles
+      1682063616, // repository
+      27,         // globalSchema
       74,         // delete
       7           // compatibility;
   };
@@ -190,12 +189,14 @@ bool is_supported_zotero_db(const std::filesystem::path& zoteroDBPath)
   if (zoteroDBInfo.userdata != supportedZoteroDBInfo.userdata)
   {
     fmt::print("The zotero library is not supported: userdata version mismatch.\n");
+    fmt::print("Found userdata: {}; Expected userdata: {}\n", zoteroDBInfo.userdata, supportedZoteroDBInfo.userdata);
     return false;
   }
 
   if (zoteroDBInfo.globalSchema != supportedZoteroDBInfo.globalSchema)
   {
     fmt::print("The zotero library is not supported: globalSchema version mismatch.\n");
+    fmt::print("Found globalSchema: {}; Expected globalSchema: {}\n", zoteroDBInfo.globalSchema, supportedZoteroDBInfo.globalSchema);
     return false;
   }
 

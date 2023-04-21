@@ -8,10 +8,12 @@
 
 namespace zotfiles
 {
+
 /*
  * TODO:
  * - add a command line option to specify the collection name (optional)
- * - allow or disallow duplicates paths of pdfs in the tree
+ * - allow or disallow duplicates paths of pdfs in the tree. Currently, PDFs that are in multiple collections, will be written in every
+ * collection directory
  * - add option to query only files of a specific user name
  * - add option to query only files of a specific library
  */
@@ -136,18 +138,18 @@ int main(int argc, char** argv)
   app.add_option("-l,--lib", libraryPathStr, "Path to the zotero library. Default is the current directory.");
 
   std::string outputDirStr;
-  app.add_option("-o,--output_dir", outputDirStr, "Path to the output directory.")->required();
+  app.add_option("-o,--output_dir", outputDirStr, "Path to the output directory.");
 
   bool printZoteroDBInfo{false};
   app.add_flag("--print_db_info", printZoteroDBInfo, "Print the zotero db info.");
 
   bool overwriteOutputDir{false};
-  app.add_flag("--overwrite_output_dir",
+  app.add_flag("--overwrite_dir",
                overwriteOutputDir,
-               "Overwrite the output directory if it exists. All files in the output directory will be deleted.");
+               "Overwrite the output directory if it exists. All directories and files in the output directory will be deleted.");
 
-  bool skipExistingFiles{false};
-  app.add_flag("--skip_existing", skipExistingFiles, "Skip existing files if they exist in the output directory.");
+  bool overwriteExistingFiles{false};
+  app.add_flag("--overwrite_files", overwriteExistingFiles, "Skip existing files if they exist in the output directory.");
 
   CLI11_PARSE(app, argc, argv);
 
@@ -162,18 +164,17 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  if (!zotfiles::is_supported_zotero_db(zoteroDbPath))
-  {
-    fmt::print("The given zotero db is not supported.\n");
-    fmt::print("Currently supported zotero db:");
-    fmt::print("\n{}\n", zotfiles::formatted_zotero_db_info(zotfiles::supported_zotero_db_info()));
-    return EXIT_FAILURE;
-  }
-
   if (printZoteroDBInfo)
   {
     const zotfiles::ZoteroDBInfo zoteroDBInfo = zotfiles::zotero_db_info(zoteroDbPath);
+    fmt::print("Zotero db info:");
     fmt::print("\n{}\n", zotfiles::formatted_zotero_db_info(zoteroDBInfo));
+    return EXIT_SUCCESS;
+  }
+
+  if (!zotfiles::is_supported_zotero_db(zoteroDbPath))
+  {
+    return EXIT_FAILURE;
   }
 
   std::filesystem::path outputDirPath = zotfiles::create_output_dir(outputDirStr, overwriteOutputDir);
@@ -186,15 +187,22 @@ int main(int argc, char** argv)
   const std::vector<zotfiles::PDFItem> pdfItems = zotfiles::create_pdfitems(zoteroDbPath);
 
   const auto numPdfItems = pdfItems.size();
-  fmt::print("Number of pdf items with a valid pdf path: {}\n", numPdfItems);
+  fmt::print("Number of PDF items with a valid pdf path: {}\n", numPdfItems);
   const auto numInvalidPdfItems = numPdfItems - pdfItems.size();
-  fmt::print("Number of pdf items with an invalid pdf path: {}\n", numInvalidPdfItems);
+  if (numInvalidPdfItems > 0)
+  {
+    fmt::print("Number of PDF items with an invalid pdf path: {}\n", numInvalidPdfItems);
+  }
 
   fmt::print("\n");
   zotfiles::CollectionTree collectionTree = create_collectiontree(pdfItems, zoteroDbPath);
-  std::size_t writtenPDFs = collectionTree.write_pdfs(outputDirPath, skipExistingFiles);
-  fmt::print("\nNumber of existing pdfs skipped: {}\n", numPdfItems - writtenPDFs);
-  fmt::print("Number of pdfs written: {}\n", writtenPDFs);
+  auto [writtenPDFs, skippedPDFs] = collectionTree.write_pdfs(outputDirPath, overwriteExistingFiles);
 
-  return 0;
+  fmt::print("\nNumber of written PDFs: {}", writtenPDFs);
+  if (skippedPDFs > 0)
+  {
+    fmt::print("\nNumber of existing PDFs skipped: {}", skippedPDFs);
+  }
+
+  return EXIT_SUCCESS;
 }
