@@ -168,13 +168,13 @@ std::string formatted_zotero_db_info(const ZoteroDBInfo& info)
 ZoteroDBInfo supported_zotero_db_info()
 {
   static constexpr ZoteroDBInfo supported_zotero_db_info{
-      120,        // userdata
+      121,        // userdata
       18,         // triggers
-      1682063609, // translators
+      1682165479, // translators
       32,         // system
-      1682063609, // styles
-      1682063616, // repository
-      27,         // globalSchema
+      1682165479, // styles
+      1688765984, // repository
+      28,         // globalSchema
       74,         // delete
       7           // compatibility;
   };
