@@ -1,0 +1,472 @@
+JOURNAL OF COhlPUTATIONAL
+
+PHYSICS 93, 388310 (1991)
+
+Solution of the Implicitly Discretised Reacting Flow Equations by Operator-Splitting
+R. I. ISSA
+Department oj’ hlirteral Resources Engineering, Imperial College qf Science, Technology md Medicine, London, England
+
+B. AHMADI-BEFRUI,* K. R. BESHAY,? AND A. D. GOSMAN
+Department of Mechanical Engineering, Imperial College of Science, Technology and Medicitte, London, Engkmd
+Received April 24, 1987: revised November 14, 1989
+The PISO method. which is a non-iterative method for the solution of the time-dependent, implicitly discretised fluid flow equations by operator-splitting. is extended here to handle reacting flows. The additional species conservation equations, togelher with the energy equation, are incorporated into the predictor<orrector sequence of steps. Both turbulent-mixing and chemical-kinetics controlled combustion models are catered to. The method is tested in one- and two-dimensional cases and a comparison with a comparable iterative scheme is made. The results show that such reacting flows can be handled by the new scheme with effkiency, while temporal accuracy is maintained. I& 1991 Academic Press. Inc.
+
+INTRODUCTION
+In Cl]? a non-iterative technique, called PTSO, for the solution of the implicitly discretised time-dependent flow equations was described. The method was formulated for both laminar and turbulent inert flows, both compressible and incompressible. The non-iterative solution is accomplished at each time-step through a sequential predictor-corrector process within which the different dependent variables are updated individuaily. The term --operator-splitting” is invoked to refer to the separate operations effected to each of the variable fields, rather than to what is normally understood to be the time-splitting of terms. The avoidance of iteration at each time-step reduces the computing effort substantially, while the sequential nature of the solution obviates the need for block solution and its complexity.
+
+* Present address: Faculty of Engineering. Cairo University, ’ Present address: AVL, Graz, Austria.
+
+0021-9991,/91 $3.00
+Copyright tc 1991 by Academic Press, Inc. All rights of reproductmn in any form reserved.
+
+388
+
+Egypt.
+
+REACTING FLOW PISO
+
+389
+
+The performance of the PISO method was evaluated in [Z]. where it was applied to compressible and incompressible flows. A comparison with similar computations
+using iteration verified the considerable advantages of PISO in speed. As was pointed out in [l], the predictorcorrector strategy need not be confined
+to the handling of the linear coupling between the equations in pressure and velocity. Extension of the method was indeed made to handle the strong coupiing through the source terms in the h--~ turbulence model equations. Here, a method. based on the PISB approach, to compute reacting flows is presented. the strong coupling arising from large density variations, the scheme cope with non-linear linkages acting through the convective contributions in the equations. This is in addition to the coupling through the source terms due to the reaction kinetics.
+The basic PISO method, in the form presented in 111. has in fact already been applied to steady-state reacting flows in, for example, L4, 41. However, in tkse implementations. the splitting was effected only to the momentum and continui:y equations, while the handling of the conservation equations for species and tem-
+rature (pertaining to the combusion processj was merely appended at t splitting sequence. No attempt was made to absorb the coupling betw
+two sets of equations within the splitting procedure. Although the above applications have demonstrated the utility and reliability of
+PISO, they do not take advantage of the strength of the method by incorporating all strongly coupled equations within the splitting process. More importantly, PISO was primarily devised to handle unsteady flow efficiently by avoiding iteration, which is made possible by this very splitting practice. Clearly, such a capability cannot be maintained when extension to reacting flows is made without the incerporation of the equations governing combustion within the splitting process, It is this issue which is dealt with herein.
+It should be emphasized here. that the present method is mainlyy intended to cater to the strong coupling between the flow field and the combustion process, rather than to deal exclusively with the “stiffness” of the combustion equations themsebes which is inherent in the modelling of chemical reactions. Such stiffness can itself be
+andled by operator-splitting, as examination of the literature would reveal (see, for example, 15, 61). In the latter context operator splitting is introduced into the species equations alone to cope with two disparate time-scales, that of the combus‘on process and that of transport, regardless of the two-way coupling between the
+ow and combustion process. Such splitting can indeed be incorporated within the method presented herein. However, for the purpose of this study, no’ such measures (save for the linearisation of one term to be outlined later j were found necessary, This was partly assisted by the fact that only single-step reactions were considered: it can also be argued that the implicit treatment of tbe reaction terms, facilitated ‘by the present method, must have been another main factor. It should be s ssed ikit the capability of the method to handle multi-step reactions remains to VeKifed,
+Since the present work is concerned with the method of solution rather than with the modeliing of reaction processes, little will be said about the combustion models
+
+390 ISSAET AL.
+themselves. The handling of two such models is treated herein; the first is the conventional Arrhenius type for chemical-kinetics controlled combustion, and the second is for turbulent-mixing controlled reaction due to 171. The method will be explained with reference to a simple example in which two species (fuel and oxidant) react to give one product. The following sections will first present the governing equations to be solved, the operator-splitting procedure will then be detailed, and finally results of the computations will be compared with calculations performed using a comparable iterative method.
+GOVERNING EQUATIONSAND DISCRETISATION
+The Transport Equations The governing ensemble-averaged transport equations in Cartesian tensor
+notation for continuity, momentum, energy, and species(fuel) in reacting flow are
+(1)
+(2)
+
+and
+
+where all dependent variables are taken to be the ensemble-averagedmean when the flow is turbulent, and ,LJis an effective viscosity, while gE and oI;.are effective Prandtl numbers. Presently, these diffusion coefficients are assumed to be given. In turbulent flow, their values might be determined from a turbulence model such as the k--E one; otherwise laminar values prevail. When a turbulence model is used, the associated equations should be handled within the splitting procedure. As this is outlined in Cl], reference to it will be omitted here. The energy, e, is related to the temperature, T, and the fuel mass fraction (also referred to as concentration),
+m, by
+
+e= C,T+mfH,,
+
+(5)
+
+where C, is the constant volume specific heat, and H, is the heat of combustion of the fuel. Term S, in Eq. (4) stands for the rate of consumption of fuel.
+
+REACTING FLOU’ PISO
+The pressure, p, and the density, p are related by the equation of state which ma-y be written in the form
+
+where? for a perfect gas, I,!Ibecomes IIRT.
+The main heat-releasing combustion reaction is presumed to be of the globai single-step irreversible form
+
+1 kg fuel + s kg oxidant -+ (1 + sf kg products,
+
+i4)
+
+where s is the stoichiometric combination ratio. The fuel combustion rate, S,, for a chemical-kinetics
+process is represented by the Arrhenius type expression
+
+controlled combustion
+
+SF = - .4p2m~,mo exp ’ -Y& . \>
+where A and E are empirical coefficients, nz, is the concentration (mass fraction)
+of oxidant, and R is the universal gas constant. For turbulent-mixing contro’eled
+combustion, the expression proposed in [7] is used. It is
+
+where A’ and B are empirical coefficients, and t is the turbulent-mixing time scaie. The mass fractions of oxidant and product, denoted by m, and rnp’ respectiveiy, along with the inert concentration, mi, are obtained through Eq. (7) and the overah species conservation as
+
+ny + - ‘?lP _- ill/, [ + Gmp.i 1$-S
+1 mj = 1, j=J’, 0, p, i,
+where the subscript I denotes an initial value. Discretisatisn
+As is the case with the basic PISO method in [I], the splitting procedure can be effected to any set of equations discretised by conventional difference schemes. For the sake of generality, the discretised equations are therefore presented here in the
+
+392 ISA ET AL.
+operator form employed in [l], which caters to the various spatial discretisation schemes.For temporal discretisation, the Euler implicit schemeis again selectedfor easeof presentation.
+The governing equations (1) to (4) may be expressed,respectively, as:
+
+1 5 i(ye)“+’
+
+-(pe)‘~)-B,e”+‘=J(e”+‘)-p”+‘di,l+’
+
+(1.2) (131
+
+-(pn~f)“}-(c,+S,)tn;t+‘=G(tn;+‘)+S”+’.
+
+(14)
+
+In E.qs.(11) to (14), similar notation and practices as those introduced in [l] are followed. Thus, the operators H, J. and G contain the convective and diffusive contributions and are defined as
+
+H= c A,u~.~
+k
+J=c B,e,
+
+(15) (16)
+
+and
+
+(17)
+
+where index k- is a grid node identifier and the summation is over all the nodes surrounding the central node that are involved in the formulation of the finitedifference representation of spatial fluxes. The quantities A, B, and C are finitedifference coefficients; subscript 0 denotes the central coefficient. These central elements are taken to the left-hand side of the equations to enable their implicit treatment in the manner introduced in [ 11.
+The terms S and S, in the equation for speciescontain the rate of consumption of fuel, the expressions for which depend on the combustion model. Thus, for the turbulent-mixing controlled rate proposed in [7],
+
+S= -AJPm5 in inf,--trsio’l+psBm
+
+(18a)
+
+and
+
+s, = 0
+
+(19a)
+
+REACTINGFLOW PISO and. for an Arrhenius reaction rate,
+
+S = - Ap’sm-,.(mf - m ) exp
+
+and where
+
+S0 =
+
+-
+
+Ap2s(2m I -
+
+m) exp i \
+
+-
+
+L’\ AT)’
+
+In arriving at expressions (18b) and (19b), the reaction rate term; S,, has &en hnearised in mf using Taylor series expansion. This enhances the stability of the procedure as it strengthens the diagonal dominance in the set of discretised equaCons. This was the only measure found necessary to stabilise the cal~~~at~o~s presented herein. This, it may be argued, is due to the simple single-step reaction considered here. Other linearisations (or operator-splittings in the sense used by [6] ) of the source terms in cases of multi-step reactions may be necessary, in which case the resulting expressions could still be incorporated in the overall IS0 splitting.
+As in the case in [ 11, the pressure is computed from its own equation which is derived from a combination of the continuity equation (11) and the momenttim equations (12). The derivation of such an equation will be dealt with when the solution algorithm is presented.
+The above equations are general and do not relate to a particular spatial discretisation scheme. It is these equations which will be used in the presentation of the splitting algorithm. For the purpose of the example calculations presented later. however, one such scheme had to be selected. This is the same as that described in [2], and hence requires no further elucidation here. It sutfi‘ces to say that the scheme employs a staggered grid, is of the finite-volume type9 and is based on a hybrid of upwind/central difference formulae.
+SPLITTING PROCEDURE
+In [ 11, the operator-splitting methodology was introduced to the equations of inert flow, in which the variations in density are solely due to compressibi’lity. Attention was focused there on the linear pressure-velocity coupling and, although it was pointed out that non-linear coupling through coefficients can be bandied by the same splitting procedure, this was ignored because it *was deemed unnecessary for the applications in hand.
+
+394 ISSA ET AL.
+In reacting flows, very large density gradients arise, leading to strong non-linear coupling of the equations; this can no longer be ignored in the formulation of the solution algorithm. As will be seen shortly, the incorporation of the species and energy equations demand significant restructuring of the predictor and corrector steps in the algorithm. This restructuring embodies the main departures from the original splitting. These are:
+(i) The energy as well as the speciesequations are now solved in implicit form together with momentum in the samepredictor step. This is to account for the rapid variations in temperature and concentration over the time-step brought about by combustion and which have profound influence on subsequent corrector steps.
+(ii) The coefficients in the corrector steps are now updated to reflect the large variations in density. The updating is carried out only after the continuitybased pressure equation is solved. This ensures that conservation is maintained, which is crucial especially in the calculation for species.
+(iii j Energy and speciescorrector steps now follow each momentum corrector. This leads to an increase in the accuracy of the overall scheme (this can be shown following the analysis in [ 11; hence it is not presented here).
+Another change that is made is the solution for pressure itself rather than for pressure increments as in [ 11. This is merely an organisational matter which does not affect the outcome of the calculations. The details of the splitting are presented in what follows.
+Let superscripts *, **, and *** denote intermediate field values obtained during the splitting procedure. The steps in this procedure are as follows:
+(a) Predictor step. The velocity, density, viscosity, and pressure field prevailing at time t” are used to calculate the coefficients A, B, and C in Eq. (15) to (17). The governing equations are solved in the following sequence:
+(i) Energy. Based on Eq. (13), this is:
+(ii) Species.From Eq. (14), this is:
+(21)
+(iii) Momentum. Equation (12) is taken as:
+(22j
+Equations (20), (21), and (22) can be solved by one of the standard techniques to yield the e*, m,?, and U: fields, the last of which, it should be noted, will not in
+
+REACTING FLOW PISO
+
+-795
+
+general satisfy the continuity equation (11). The temperature, T*, is now calculated from Eq. (5). Note that the order of solution of these equations is of no consequence, as ali coefficients are based on old time level values.
+(b) First corrector step. (ij Momentum corrector. A new velocity field, ii?*, together with corresponding pressure and density fields, p* and o*, are sought to satisfy the continuity equation:
+-&1 t.p* - p”) + di(p”Ll** ) = 0.
+
+The momentum equation (12j is now written in an explicit corrector form as
+
+where all the coefficients A are still evaluated at the old time level (note that the velocities UT and the density p” do not satisfy continuity). Equations (23j an.d (241 are now used to derive the pressure equation in the fashion presented in [I]. Thus, taking the divergence of Eq. (24) and substituting into Eq. (23) gives
+
+where, in arriving at Eq. (25). p* has been replaced by:
+p* = p*y$*.
+Equation (2s) can be solved for p *’, the new densities and velocities, p* and I.{:*. are now computed from Eqs. (26) and (24), respectively. These new fields: it should be recalled. satisfy the continuity equation (23).
+(iij Energy corrector. The UT* and p* which now satisfy continuity are used to update the B coefficient in equation (17). The energy corrector equation is thus taken as
+which yields the e** field. (iii) Species corrector. Here, also, u,F* and p* are used to update the C
+coefficient in Eq. (16). The speciescorrector equation is
+
+396 MA ET AL.
+
+which yields the IF?-?*field. The temperature is then updated from Eq. (5) as
+
+whence
+
+T”* = e** - r?lnf*H c c, ’
+***=j&
+
+(29) (30)
+
+(c) Second corrector step. (i) Momentum corrector. For this step, the momentum equation is
+
+** ***=H*(u:‘*j+!clI,-~ip**, ui iit ’
+
+(31)
+
+where it should be noted that all A coefficients in Eq. (15) and (31) are based on p*andui ** . By combining Eq. (31) with the continuity relation
+
+$P**- P”) + diif **,***) = 0,
+
+(32)
+
+the following pressure equation is obtained:
+
+(33)
+
+In arriving at the last equation, the followinig equation of state has been invoked:
+
+P** = p**JI**.
+
+(34)
+
+Solution of Eq. (33) yields p** which is used to obtain p**, via Eq. (34), and velocity u)** from Eq. (31).
+(ii) Energy corrector. The coeflicients B in the energy equation are updated using the most recent values of density and velocity to give the second energy corrector equation,
+
+which yields e***.
+
+(iii) Speciescorrector. Similarly, the second-corrector speciesequation is
+
+-P-** 6t
+
+q--s**
+
+n
+
+0
+
+nr;c**=G**jm:*)+~m;+S**, > bt
+
+(36)
+
+i~hich gives the I?,+** field. The temperature is then obtained from
+The density p**, velocity UT**, fuel concentration ?I?:**, and temperature T”** are taken to represent the field values at the next time level, rz+ 1; this completes the sequence in the solution of the equations over the time-step. It should be noted that, for non-reacting flows, the method reduces to the original PISQ with coedficients being updated at each corrector step.
+RESULTS
+The present methodology is applied to both one- and two-dimensional unsteady flame propagation in confined chambers. The purpose of the calculation is to;
+(i) demonstrate that the method is capable of handling two different, singlestep reaction models, including that of the Arrhenius type;
+(ii) show, at least for the present choice of discretisation scheme, that the temporal errors introduced by the splitting procedure vanish with 6: and do so at least as fast as the temporal discretisation error;
+(iii i evaluate the saving in computing effort achieved by avoidance or’ iteration; and
+(iv) demonstrate the ability of the method to handle large time steps when high temporal accuracy is not demanded.
+To accomplish objectives (ii) and (iii) above, comparisons are made against computations with an existing iterative method employing the same spatial and temporal difference schemes. Such a method yields (by virtue of iteration) the exact solution (to within the iteration tolerance imposed of around I@-’ on residuals) to the discretised equations over each time-step. Hence. the errors in the fields thus calculated will be solely due to the spatial and temporal discretisation schemes. By refinement of 6t, the value at which the chosen temporal difference scheme gives a time-accurate solution can therefore be found. Comparison with such solution at the same value of bt will reveal the temporal splitting errors contained in PPSO.
+The iterative method chosen for the purpose of comparison is SIMPLE described in its original form in [S] and its application to reacting flows in Cl 12. In the latter, the species and energy equations are solved after momentum and pressure within each iteration. The reason for the choice is that the method is one of the most widely used and established. Improvements on SIMPLE have been developed in the form of the SIMPLER [9] and SIMPLEC ilO] methods. These are reported to be more stable than SIMPLE and can be signi~~antly faster when the
+
+398
+ff
+
+ISSA ET AL.
+
+bt/6t,
+16 a L
+2
+1 Ialso iterotlvel
+
+FIG. 1. Reactedness distribution for turbulent-mixing controlled reaction.
+relaxation factors are optimised. The comparisons presented herein, therefore, have to be viewed with these improvements in mind. Nevertheless, the reported increase in speed with these methods is still not sufficient to offset the cost of iterating at each time-step, a process which the non-iterative PISO dispenseswith.
+One-Dimensional Compressible Reacting Flow The one-dimensional compressible case chosen is that of a reacting flow with
+constant effective viscosity (values typical of a turbulent flow) in a long adiabatic duct with closed ends. The effects of wall shear are accounted for approximately. A uniform mesh of 200 cells was mainly used. In the absenceof an ignition model, burning is triggered by artificially depleting the fuel in a small region (encompassing one computational cell) adjacent to one end of the duct, at a rate which consumes f% of the total charge over a period of T, where 5 is the mixing time scale, to be defined shortIy; thereafter, combustion is allowed to proceed at its own rate.
+Calculations were first performed for turbulent-mixing controlled combustion using the model in [7], with constants: ‘4 = 4.0 and B = 0.5. The turbulent mixing time scale, 7 (0.01 s), and the viscosity levels are taken from other combustion simulations. The iterative scheme is used to find the maximum allowable value of the computational time-step (say, st,), for which the temporal truncation error is acceptably small.’ Under-relaxation was necessary to stabilise the computations, values of 0.5 being used for the velocity, 0.7 for the energy and fuel concentration, and 1.0for the pressure. Similar calculations were then performed using the present methodology using time-steps that are multiples of 61,. Figures 1, 2, and 3 show the
+’ Only the final time-accurate solutions resulting from these exercises are presented for clarity
+
+REACTING FLOW PISO
+
+3%
+
+_-.- _-__
+-.
+
+2
+1 in!50 lierstive I
+
+0.2b 0.1 b
+
+.,\ :,\ \ '.!,‘ \
+\k!\\ \ \
+
+FIG. 2.
+
+0.1 0.2 0.3 0.L 0.5 0.6 0.7 0.6 0 9 1.0 X/L
+Temperature distribution for turbulent-mixing controlled
+
+reactioz
+
+predictions along the duct at time t= 3~. Figure 1 shows the distribution of ?he reactedness, defined as
+
+where the superscripts LI and b stand for unburnt and fully burnt values, respectively. Figure 2 shows the distribution of the normalised temperature, defined as
+
+Ih.0
+
+b:/bt, __ 16
+
+EiG. 3. Velocity distribution for turbulent-mix@ controlled reaction
+
+400 ISSA ET AL.
+and Fig. 3 displays the corresponding gas velocity normalised by the empirically determined turbulent flame speed ( _=2 k/q ABk,/a,, where C, and g/ are turbulence related constants, and k. is the initial turbulent kinetic energy). The reason for temperature rise behind the flame front in Fig. 2 is due to the pressure work term (p(atr,/~?x,)) that appears in the energy equation (3); this is significant due to the steep velocity gradient and the low value of density behind the flame. The different curves in each case are those obtained with the present method for different values of c?t/dt,, as well as that for the time-accurate solution obtained with the iterative method. The latter curve is indistinguishable from that pertaining to St/Gt, = 1, verifying that the temporal splitting errors vanish before the errors introduced by the temporal difference scheme used.
+Next, calculations were performed for a chemical-kinetics controlled reaction (Arrhenius) to test the performance of the present method for this difficult situation (where the reaction reate increases exponentially with temperature). The reaction rate constants are those for a pure hydrocarbon reaction and are taken as A = 1.5x IO8m’/kg,/s and E= 1.0x 10” J/kg mole. For this situation, the iterative scheme proved troublesome to converge and attempts to obtain a solution were abandoned becauseof the excessivecomputing time requirement. Figure 4 displays the results from PISO, where the effect of the computational time-step (normalised by the same value of s as in the previous case, in the absence of a suitable time scale) on the calculated reactedness(v.~) at t = 3s. The temporal truncation error becomes acceptably small at about dt=0.003~. However, it could not be ascertained whether this is dictated by the temporal errors in the splitting or in discretisation, since no solutions could be obtained with the iterative method. Judging by the performance of PISO in the previous as well as the following cases,it is con-
+
+LO-
+
+0.8- bt/r
+
+- 0.05
+
+-- 0.025 0.6 -
+--__ 0.0125
+-.-. 0.00625
+
+0.L -
+
+-..- 0.00313
+
+FIG. 4. Fuel concentratiopnrofilesat r= 3r for chemical-kineticosntrolledcombustion.
+
+REACTING FLOW PISO
+
+6
+
+-
+
+0.1 0.2
+
+0.3
+
+0.L 0.5 0.6 0.7
+
+0.6
+
+0.S
+
+1.0
+
+x/L
+
+FIG. 5. Fuel concentration profiles at different times for chemical-kinetics contrclled comtiustio::.
+
+btjr 0 0.05
+b 0.025 i 0.0125 d 0.00625 2 o.orJ3i3
+I
+OL0 0.1 o-2 0.3 0.1. 0.5 O-5 0.7 0.8 0.S 10
+X/L
+FIG. 6 Fuel concentration profile a.long one side of a two-dimension& ctiamber
+
+402 3
+
+ISSA ET AL.
+
+-- =8.32M/S
+
+---_---___-_.
+Xi)
+NORMALISED FUEL CONCENTRATION
+~0.90000 ~0.70000 ~0.50000 ” 0.30000 .0.10000
+FIG. 7. Field variables in turbulence-controlled reaction in two-dimensional chamber at r = 0.03 s: (i) velocity vectors; (ii) fuel concentration; (iii j temperature.
+
+REACTING FLOW PISO
+-0.9GOOG -0.10000 .3.50000 .0.30000 .0.10000
+FIG. 7 --Contimed
+jectured here that it is the temporal difference scheme, which is only first order accurate, that dictates such small 6t. It should, of course, be remembered that the equations in this case are very “stiff” and very steep variations prevail, putting g:eat demands on the scheme. The fuel concentration profiles, with the finest Sz, at different time levels are shown in Fig. 5. Here a fine mesh of 400 cells is used to capture the sharpness of the flame front.
+Here again two cases are presented; one with turbulent-mixing conrrolied reacZion and the other with Arrhenius type of reaction. In the first case. a reacting flow with a constant effective viscosity (at a value typical of turbulent flow) is studied in a closed square chamber of 50 x 50 cm. The usual no-slip boundary conditions are imposed at the sides of the two-dimensional adiabatic chamber and a unifarm grid of 40 x 40 cells was used. As was done in the previous case, burning was started by artificially causing the fuel in the cell located at one of the corners of the chamber to be depleted at a rate which consumed &% of the total charge in the cell over a period of z; after that, combustion is allowed to proceed at its own rate. For tSs case: calculations were performed for turbulent-mixing controlled combustion with the same values for coefficients A and B, mixing lime scale. 5. and viscosity as those used in the one-c8imensional case.
+As in the one-dimensional case, computations were first performed with the iterative scheme using various values of 6t to find the value br, for which the temporal errors become negligible. The exercise was then repealed with the present
+
+404 ISSA ET AL.
+i) .,, ,._____-----__-----_--~~~-~~~..
+.,,I,,,,,,,,,,,,,,,,,,,.,,,,~..~_,C,.C...~...~..~.~~C~_~_~_~_~-~-~~~~-~~.~~~~.
+
+- =6.63 M/S TIME = 0.045 S
+
+ii) TIME = 0.045 S
+NORMALISED FUEL CONCENTRATION
+~0.90000 -0.70000 -0.50000 =0.30000 *0.10000
+FIG. 8. Field variables in turbulence-controlled reaction in two-dimensional chamber at I =0.045 s: (i) velocity vectors; (ii) fuel concentration; (iii) temperature.
+
+REACTING FLOW PISO NORM.4LI5’ED TEMPE.RATlXE
+
+FIG. 8--Continued
+
+method using time-steps which are multiples of hi,. The results of these computatiolns are displayed in Fig. 6 which shows the predicted reactedness at i = 3~ along one of the sides adjacent to the corner where ignition was initiated. Once again, it is clear that a time-step independent solution is obtained with PISO at the same step size as the iterative scheme, i.e., at bt/dr, = 1. The distributions of velocity, kel concentration, and temperature (both normalised as before) at two time levels are
+
+CPU litemtwe) CPU IPICOI
+
+10
+
+1 x. x\
+
+'\
+
+B-
+
+x '\
+
+'\ ,/
+
+'\ _x'
+
+6- 'w*
+
+,A
+
+00 2 L 6 6 10 12 1L 16
+&i/b!,
+F!G. 9. Ratio of computing time of iteratixve/present method.
+
+406
+-__
+i)
+
+ISSA ET AL.
+__- __-
+- ==8.24M/s TIME =3-000 MS
+
+i)
+r-----
+
+-)
+
+TIME =3.000 MS
+NORMALISED FUEL CONCENTRATION
+-0.90000
+~0.70000 +0.50000
+“0.30000 *0.10000
+
+FIG. 10. Field variables in chemical-kinetics controlled reaction in two-dimensional chamber at I = 3 ms: (i) velocity vectors; (ii) fuel concentration; (iii) temperature.
+
+REACTING FLOW PISO
+NORMALISED TEMPE~RA TURE
+’ o.9ocoo
+~0.70000 -0.50000 ~0.30000 =3.10000
+L
+illustrated in Figs. 7 to 8; the computation was performed with the finest time-sien size. The results appear to be plausible.
+In Fig. 9, the ratio of computing effort required by the iterative method to that by PISO is plotted as a function of the time-step size,It is evident that PZSOis not only able to cope with large 6t, but it is much faster, especially when a timeaccurate solution (6t!‘dt, = 1) is required.
+In the second case,the same 40 x 40 mesh was employed in a square chamber of 5 x 5 cm, the reduction in size from the previous case being necessitated by the desire to capture the thin flame by as many cells as possible without mesh re5nemerit. Otherwise, the flame would have been far too thin to be captured by the mesh, and the calculations would have been somewhat meaningless. Other parameters are retained at their values presented for the previous cases.However, in order to investigate the flame propagation in the absenceof wail effects,f&E siip was assumedat the walls; this should give a cyhndrical frame front. Figs. IO and II which display the velocity vector field and the normalised fuel concentration and temperature contours at two time levels, indeed show that the flame front is cyiindrical. They also exhibit that a fairly thin flame front is predicted as is expected from a chemical-kinetics controlled reaction.
+CONCLUSICPNS
+The PISO method of [1] is extended and suitably modified lo handle the strong coupling arising in the equations governing reacting flows. This entails not on.ly the
+
+408
+-___-
+i)
+
+ISSA ET AL.
+
+___--
+
+-=
+
+= E.57 M,TTIME =3.500 MS
+
+ii)
+NORMALISED FUEL CONCENTRATION
+~0.90000 -0.70000 -0.50000 ~0.30000 *0.10000
+FIG. 11. Field variables in chemical-kinetics controlled reaction at r=4.5 ms: (i) velocity vectors; (ii) fuel concetration; (iii) temperature.
+
+REACTING FLOW PISO
+
+q&i
+
+NCRMkLlSED TEMPERATliRE
+= 0.50000 -0.7cl00c ” 0.50000 ” 0.30030 ~5.10000
+FIG. 1 I -Coniinued
+handiing of additional source terms, but also the accounting for the rapid variariocs in convective coefficients due to steep density changes. Reorganisation of the splitting sequencehas been necessaryto achieve all this.
+The new schemewas applied to two problems of unsteady reacting flows, in oneand two-dimensional closed chambers. The results demonstrate that the spiitting process undermines neither temporal accuracy nor stability, Comparison with an existing iterative schemereveals that reacting flow TWO is severai times faster than its iterative counterpart, and that the scheme is equally capable of handhng turbulent-mixing and chemical-kinetics controlled combustion.
+The authors wish to thank Dr. A. Folefac of the Department of Min-rL d Resources Engineerkg ffx assistance in carrying out some of the calculations.
+REFERENCES P. R. I. ISA, J. Compur. Php. 62. 40 (1986 ). 2. R. 1. ISA. A. D. GOSMAN, AND A. P. WATKINS, J. Compur. Phys. 62. 66 (1986). 3. F. C. Loocewoo~. S. M. A. RIZVY. G. K. LEE, AND H. WHALEY. “Proceedings 20th In:. Cumbus-
+t:on Symp., 1984.” p, 513.
+
+410 ISSA ET AL.
+4. D. S. JANG, R. JETLI. AND S. ACHARYA, Numer. Heat Transfer 10. 209 (1986). 5. R. J. KEE AND J. A. MILLER, AIAA J. 16, 169 (1978). 6. J. B. GREENBEKG, Int. J. Num. Methods Fluids 4, 653 (1984). 7. B. F. MAGNUSSEN AND B. H. HJERTAGER, in Proceedings 16th Symposium (Int) otz Combustiorz
+(Combustion Institute, New York, 1976), p. 719. 8. L. S. CARETTO, A. D. GOSMAN. S. V. PATANKAR, AND D. B. SPALDING, in Proceedings, 3rd Int. Cor$
+on Numerical Methods in Fluid Dynamics, 1972, p. 60. 9. S. V. PATANKAR, Numerical Heat Transfer and Fluid Flow. (McGraw-Hill, New York, 1980). 10. J. P. VAN DOORMAAL AND G. D. RAITHBY, Numer. Heat Transfer 7, 147 (1984). 11. B. AHMADI-BEFRUI, A. D. G~SMAN, F. C. LOCKWOOD. AND A. P. WATKINS, Trans. SAE 636 (1981).
+

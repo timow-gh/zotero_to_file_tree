@@ -1,27 +1,50 @@
-set(TARGET_NAME zotero_to_file_tree)
+set(LIB_NAME zotero_to_file_tree)
 
-add_executable(${TARGET_NAME} zotero_to_file_tree.cpp ZoteroDB.cpp CollectionTree.cpp CollectionTree.h ZoteroCollection.h PDFItem.h ZoteroPDFAttachment.h)
-target_link_libraries(${TARGET_NAME} PRIVATE CLI11::CLI11 fmt::fmt SQLiteCpp)
+add_library(${LIB_NAME} ZoteroToFileTree.cpp
+ZoteroDB.cpp
+CollectionTree.cpp
+CollectionTree.h
+ZoteroCollection.h
+PDFItem.h
+ZoteroPDFAttachment.h
+ErrorCodes.hpp
+ErrorCodes.cpp
+)
+target_link_libraries(${LIB_NAME} PRIVATE fmt::fmt SQLiteCpp PUBLIC CLI11::CLI11)
+add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
-set_target_properties(${TARGET_NAME}
+target_include_directories(${LIB_NAME} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:include>)
+
+set_target_properties(${LIB_NAME}
         PROPERTIES
         LANGUAGE CXX
         LINKER_LANGUAGE CXX
-        DEBUG_POSTFIX d
-        VERSION ${${TARGET_NAME}_MAJOR}.${${TARGET_NAME}_MINOR}.${${TARGET_NAME}_PATCH}
-        SOVERSION ${PROJECT_VERSION_MAJOR})
+        DEBUG_POSTFIX d)
 
 include(Warnings)
-add_warnings_and_compile_options(${TARGET_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
+add_warnings_and_compile_options(${LIB_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
 
 if (${PROJECT_NAME}_STATIC_ANALYSIS)
     include(static_analysis)
-    enable_static_analysis(${TARGET_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
+    enable_static_analysis(${LIB_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
 endif ()
 
-install(TARGETS
-        ${TARGET_NAME}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+set(EXE_NAME ${LIB_NAME}_cli)
+add_executable(${EXE_NAME} ZoteroToFileTreeCli.cpp)
+target_link_libraries(${EXE_NAME} PRIVATE zotero_to_file_tree::zotero_to_file_tree)
+
+set_target_properties(${EXE_NAME}
+        PROPERTIES
+        LANGUAGE CXX
+        LINKER_LANGUAGE CXX
+        DEBUG_POSTFIX d)
+
+include(Warnings)
+add_warnings_and_compile_options(${EXE_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
+
+if (${PROJECT_NAME}_STATIC_ANALYSIS)
+    include(static_analysis)
+    enable_static_analysis(${EXE_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
+endif ()
