@@ -2,6 +2,7 @@
 #define ZOTERO_TO_FILE_TREE_COLLECTIONTREE_H
 
 #include <cassert>
+#include <compare>
 #include <filesystem>
 #include <functional>
 #include <unordered_map>
@@ -10,34 +11,44 @@
 namespace zotfiles
 {
 
-// The collection item represents a pdf item from the zotero db.
+/** @brief The collection item represents a pdf item from the zotero db.
+ */
 struct CollectionPDFItem
 {
-  std::int64_t pdfItemId{};
-  std::string pdfName;
-  std::filesystem::path pdfFilePath;
+  std::int64_t pdfItemId{}; /**< Identifies the CollectionPDFItem uniquely. */
+  std::string pdfName;               /**< The name of the pdf file. */
+  std::filesystem::path pdfFilePath; /**< The absolute path to the pdf file. */
+
+  std::strong_ordering operator<=>(const CollectionPDFItem& rhs) const { return pdfItemId <=> rhs.pdfItemId; }
 };
 
-// A tree node representing a collection of pdf items.
-// A CollectionNode must have a unique id.
+/** @brief A tree node representing a collection containing pdf items.
+ *
+ * A CollectionNode must have a unique id.
+ */
 struct CollectionNode
 {
-  std::int64_t collectionID{};
-  std::int64_t parentCollectionID{};
+  std::int64_t collectionID{}; /**< Identifies the CollectionNode uniquely. */
+  std::int64_t parentCollectionID{}; /**< CollectionID of the parent. -1 if no parent exists. */
   std::string collectionName;
   std::vector<CollectionPDFItem> collectionPDFItems;
   std::vector<std::shared_ptr<CollectionNode>> childrenNodes;
 
-  bool operator==(const CollectionNode& rhs) const { return collectionID == rhs.collectionID; }
-  bool operator!=(const CollectionNode& rhs) const { return !(rhs == *this); }
+  std::strong_ordering operator<=>(const CollectionNode& rhs) const { return collectionID <=> rhs.collectionID; }
 };
 
-// Represents a tree of collections from the zotero db. Each collection contains the collection's pdf items.
+/** @brief The collection tree as displayed by the zotero app
+ *
+ * The nodes of the collection tree represent the folders of the collections in the zotero app.
+ * Only nodes containing pdf items are included in the tree.
+ */
 class CollectionTree {
   std::vector<std::shared_ptr<CollectionNode>> m_collectionNodes;
 
 public:
-  // Build the collection for a given set of collection nodes.
+  /** @brief  Build the collection for a given set of collection nodes.
+   *
+   */
   static CollectionTree build(std::unordered_map<std::int64_t, std::shared_ptr<CollectionNode>> collectionNodes);
 
   std::shared_ptr<CollectionNode> find(std::int64_t collectionID) const;
@@ -46,7 +57,7 @@ public:
    *
    * Write the pdf items to the given output directory with a directory tree structure matching the collection tree.
    *
-   *  @return {written, skipped} The number of pdfs written and skipped.
+   *  @return {written, skipped} The number of pdf files written and skipped.
    */
   std::pair<std::size_t, std::size_t> write_pdfs(std::filesystem::path outputDir, bool overwriteExistingFiles);
 
