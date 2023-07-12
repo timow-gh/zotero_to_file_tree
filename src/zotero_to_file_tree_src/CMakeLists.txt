@@ -1,4 +1,4 @@
-set(LIB_NAME zotero_to_file_tree)
+set(LIB_NAME zotero_to_file_tree_lib)
 
 add_library(${LIB_NAME} ZoteroToFileTree.cpp
 ZoteroDB.cpp
@@ -31,15 +31,16 @@ if (${PROJECT_NAME}_STATIC_ANALYSIS)
     enable_static_analysis(${LIB_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
 endif ()
 
-set(EXE_NAME ${LIB_NAME}_cli)
+set(EXE_NAME zotero_to_file_tree)
 add_executable(${EXE_NAME} ZoteroToFileTreeCli.cpp)
-target_link_libraries(${EXE_NAME} PRIVATE zotero_to_file_tree::zotero_to_file_tree)
+target_link_libraries(${EXE_NAME} PRIVATE zotero_to_file_tree_lib::zotero_to_file_tree_lib)
 
 set_target_properties(${EXE_NAME}
         PROPERTIES
         LANGUAGE CXX
         LINKER_LANGUAGE CXX
-        DEBUG_POSTFIX d)
+        DEBUG_POSTFIX d
+        EXPORT_NAME zotero_to_file_tree)
 
 include(Warnings)
 add_warnings_and_compile_options(${EXE_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})

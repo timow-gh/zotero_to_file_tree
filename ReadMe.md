@@ -1,4 +1,4 @@
-﻿# zotero_to_file_tree
+﻿# Zotero to File Tree
 
 zotero_to_file_tree.exe extracts the pdf files from a Zotero library and copies them to a directory structure based on the
 Zotero collection structure.

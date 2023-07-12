@@ -183,7 +183,6 @@ std::error_code ZoteroToFileTree::run(int argc, char** argv)
     {
       return make_error_code(ErrorCodes::SUCCESS);
     }
-    fmt::print("Error while parsing the command line arguments: {}\n", e.what());
     return make_error_code(ErrorCodes::CLI_PARSE_ERROR);
   }
 

@@ -22,7 +22,7 @@ function(create_cli_test testName)
     # Resource path to the deprecated zotero_example_db
     target_compile_definitions(${testName} PRIVATE RESOURCE_DIR_DEPR=${CMAKE_CURRENT_LIST_DIR}/zotero_example_db_depr)
 
-    target_link_libraries(${testName} PRIVATE gtest_main zotero_to_file_tree::zotero_to_file_tree CLI11::CLI11)
+    target_link_libraries(${testName} PRIVATE gtest_main zotero_to_file_tree_lib::zotero_to_file_tree_lib CLI11::CLI11)
     add_test(NAME zotero_to_file_tree.${testName} COMMAND ${testName})
 endfunction()
 
