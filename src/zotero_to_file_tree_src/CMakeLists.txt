@@ -23,7 +23,7 @@ set_target_properties(${LIB_NAME}
         LINKER_LANGUAGE CXX
         DEBUG_POSTFIX d)
 
-include(Warnings)
+include(warnings)
 add_warnings_and_compile_options(${LIB_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
 
 if (${PROJECT_NAME}_STATIC_ANALYSIS)
@@ -42,7 +42,7 @@ set_target_properties(${EXE_NAME}
         DEBUG_POSTFIX d
         EXPORT_NAME zotero_to_file_tree)
 
-include(Warnings)
+include(warnings)
 add_warnings_and_compile_options(${EXE_NAME} ${${PROJECT_NAME}_WARNINGS_AS_ERRORS})
 
 if (${PROJECT_NAME}_STATIC_ANALYSIS)

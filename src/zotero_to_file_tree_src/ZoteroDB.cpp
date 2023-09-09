@@ -58,7 +58,7 @@ public:
   template <typename Iter>
   void operator()(Iter begin, Iter end)
   {
-    pdfItemIDs.reserve(std::distance(begin, end));
+    pdfItemIDs.reserve(static_cast<std::size_t>(std::distance(begin, end)));
     collect_ids<PDFItem>(begin, end, std::back_inserter(pdfItemIDs));
   }
 
@@ -75,7 +75,7 @@ public:
   template <typename Iter>
   void operator()(Iter begin, Iter end)
   {
-    pdfParentItemIDs.reserve(std::distance(begin, end));
+    pdfParentItemIDs.reserve(static_cast<std::size_t>(std::distance(begin, end)));
     collect_parent_ids<PDFItem>(begin, end, std::back_inserter(pdfParentItemIDs));
   }
 
@@ -269,7 +269,8 @@ std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& coll
         parentCollectionID = query.getColumn(1).getInt64();
       }
 
-      if (auto iter = collectionIds.find(collectionID) != collectionIds.end())
+      // maybe_unused, because std::set has no contains
+      if ([[maybe_unused]] auto iter = collectionIds.find(collectionID) != collectionIds.end())
       {
         result.insert(ZoteroCollection{collectionID, parentCollectionID, query.getColumn(2).getText()});
       }
@@ -380,7 +381,7 @@ void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::fi
   const std::unordered_map<std::int64_t, std::vector<ZoteroCollection>> itemCollectionMap =
       retrieve_item_collections<PDFItemIDsPolicy>(pdfItems.begin(), pdfItems.end(), zoteroDBPath);
 
-  std::for_each(std::execution::parallel_unsequenced_policy{},
+  std::for_each(std::execution::par_unseq,
                 pdfItems.begin(),
                 pdfItems.end(),
                 [&itemCollectionMap](auto& pdfItem)
@@ -393,7 +394,7 @@ void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::fi
                 });
 
   // PDF items without a collection but a parent item id.
-  auto noCollectionEndIter = std::partition(std::execution::parallel_unsequenced_policy{},
+  auto noCollectionEndIter = std::partition(std::execution::par_unseq,
                                             pdfItems.begin(),
                                             pdfItems.end(),
                                             [](const PDFItem& pdfItem) { return pdfItem.collectionItems.empty(); });

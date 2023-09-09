@@ -1,7 +1,8 @@
 include_guard()
-include(cpp_proj_utils)
 
-function(add_warnings_and_compile_options target WARNINGS_AS_ERRORS)
+include(set_target_inheritance_property)
+
+function(add_warnings_and_compile_options target warnings_are_errors)
 
     if (NOT TARGET ${target})
         message(FATAL_ERROR "add_warnings_and_compile_options: target ${target} does not exist")
@@ -13,20 +14,11 @@ function(add_warnings_and_compile_options target WARNINGS_AS_ERRORS)
     private_or_interface_inheritance_property(${target})
 
     if (MSVC)
-        message(STATUS "Compiler Settings ${CMAKE_CXX_COMPILER_ID}")
-
-        # compile in parallel
-        target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY} "/MP")
-
-        # treat linker warnings as errors
-        target_link_options(${target} ${${target}_INHERITANCE_PROPERTY} "/WX")
-
-        if (WARNINGS_AS_ERRORS)
+        if (warnings_are_errors)
             target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY} "/WX")
         endif ()
 
         target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY}
-                /WX # treat warnings as errors
                 /W4 # Baseline reasonable warnings
                 /w14242 # 'identifier': conversion from 'type1' to 'type1', possible loss of data
                 /w14254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
@@ -47,18 +39,15 @@ function(add_warnings_and_compile_options target WARNINGS_AS_ERRORS)
                 /w14905 # wide string literal cast to 'LPSTR'
                 /w14906 # string literal cast to 'LPWSTR'
                 /w14928 # illegal copy-initialization; more than one user-defined conversion has been implicitly applied
-                /permissive - # standards conformance mode for MSVC compiler.
+                /permissive # standards conformance mode for MSVC compiler.
                 )
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        message(STATUS "Compiler Settings ${CMAKE_CXX_COMPILER_ID}")
-
-        if (WARNINGS_AS_ERRORS)
+        if (warnings_are_errors)
             target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY} "-Werror")
         endif ()
 
         target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY}
                 -Wall
-                -Werror
                 -Wextra # reasonable and standard
                 -Wextra-semi # Warn about semicolon after in-class function definition.
                 -Wshadow # warn the user if a variable declaration shadows one from a parent context
@@ -75,17 +64,17 @@ function(add_warnings_and_compile_options target WARNINGS_AS_ERRORS)
                 -Wdouble-promotion # warn if float is implicit promoted to double
                 -Wformat=2 # warn on security issues around functions that format output (ie printf)
                 -Wimplicit-fallthrough # warn on statements that fallthrough without an explicit annotation
+
+                # In this project this is intentional
+                -Wno-missing-field-initializers
                 )
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        message(STATUS "Compiler Settings ${CMAKE_CXX_COMPILER_ID}")
-
-        if (WARNINGS_AS_ERRORS)
+        if (warnings_are_errors)
             target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY} "-Werror")
         endif ()
-        
+
         target_compile_options(${target} ${${target}_INHERITANCE_PROPERTY}
                 -Wall
-                -Werror
                 -Wextra # reasonable and standard
                 -Wextra-semi # Warn about semicolon after in-class function definition.
                 -Wshadow # warn the user if a variable declaration shadows one from a parent context
@@ -102,12 +91,14 @@ function(add_warnings_and_compile_options target WARNINGS_AS_ERRORS)
                 -Wdouble-promotion # warn if float is implicit promoted to double
                 -Wformat=2 # warn on security issues around functions that format output (ie printf)
                 -Wimplicit-fallthrough # warn on statements that fallthrough without an explicit annotation
-
                 -Wmisleading-indentation # warn if indentation implies blocks where blocks do not exist
                 -Wduplicated-cond # warn if if / else chain has duplicated conditions
                 -Wduplicated-branches # warn if if / else branches have duplicated code
                 -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
                 -Wuseless-cast # warn if you perform a cast to the same type
+
+                # In this project this is intentional
+                -Wno-missing-field-initializers
                 )
     else ()
         message(AUTHOR_WARNING "No compiler warnings set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'")
