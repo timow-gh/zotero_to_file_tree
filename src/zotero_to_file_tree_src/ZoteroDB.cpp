@@ -28,25 +28,6 @@ static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::i
   }
 }
 
-// SQL querie to get the parent collections of the given pdf item ids
-template <typename ForwardIter>
-static std::string item_collections_query(ForwardIter itemIDBegin, ForwardIter itemIDEnd) {
-  static const std::string queryString = fmt::format(
-      "SELECT \n"
-      "items.itemID,\n"
-      "collectionItems.collectionID,\n"
-      "collections.parentCollectionID,\n"
-      "collections.collectionName\n"
-      "FROM \n"
-      "items\n"
-      "LEFT JOIN collectionItems\n"
-      "ON collectionItems.itemID = items.itemID\n"
-      "LEFT JOIN collections\n"
-      "ON collections.collectionID = collectionItems.collectionID\n");
-
-  return queryString + fmt::format("WHERE items.itemID IN ({})", fmt::join(itemIDBegin, itemIDEnd, ","));
-}
-
 class PDFItemIDsPolicy {
   std::vector<std::int64_t> pdfItemIDs;
 
@@ -339,13 +320,38 @@ static std::unordered_map<std::int64_t, std::vector<ZoteroCollection>>
 retrieve_item_collections(ForwardIter begin, ForwardIter end, const std::filesystem::path& zoteroDbPath) {
   ItemIDsPolicy itemIDsPolicy;
   itemIDsPolicy(begin, end);
-  const std::string queryString = item_collections_query(itemIDsPolicy.cbegin(), itemIDsPolicy.cend());
+
+  // Prepare the base query with placeholders
+  std::string queryString = R"(
+        SELECT
+        items.itemID,
+        collectionItems.collectionID,
+        collections.parentCollectionID,
+        collections.collectionName
+        FROM
+        items
+        LEFT JOIN collectionItems ON collectionItems.itemID = items.itemID
+        LEFT JOIN collections ON collections.collectionID = collectionItems.collectionID
+        WHERE items.itemID IN ()";
+  int count = 0;
+  for (auto iter = itemIDsPolicy.cbegin(); iter != itemIDsPolicy.cend(); ++iter)
+  {
+    queryString += (count == 0 ? "?" : ",?");
+    ++count;
+  }
+  queryString += ")";
 
   std::unordered_map<std::int64_t, std::vector<ZoteroCollection>> itemCollectionMap;
   try
   {
     const SQLite::Database db(zoteroDbPath, SQLite::OPEN_READONLY);
     SQLite::Statement query(db, queryString);
+
+    int placeholderIndex = 1;
+    for (auto it = itemIDsPolicy.cbegin(); it != itemIDsPolicy.cend(); ++it)
+    {
+      query.bind(placeholderIndex++, *it);
+    }
 
     while (query.executeStep())
     {
