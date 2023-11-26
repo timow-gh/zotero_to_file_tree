@@ -1,4 +1,4 @@
-#include "CollectionTree.h"
+#include "CollectionTree.hpp"
 #include <cassert>
 #include <deque>
 #include <fmt/format.h>

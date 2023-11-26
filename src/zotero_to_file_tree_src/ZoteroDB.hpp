@@ -1,8 +1,8 @@
 #ifndef ZOTERO_TO_FILE_TREE_ZOTERODB_H
 #define ZOTERO_TO_FILE_TREE_ZOTERODB_H
 
-#include "PDFItem.h"
-#include "ZoteroCollection.h"
+#include "PDFItem.hpp"
+#include "ZoteroCollection.hpp"
 #include <cstdint>
 #include <filesystem>
 #include <set>

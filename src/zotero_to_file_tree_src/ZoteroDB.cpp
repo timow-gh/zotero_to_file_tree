@@ -1,4 +1,4 @@
-#include "ZoteroDB.h"
+#include "ZoteroDB.hpp"
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <execution>
 #include <filesystem>

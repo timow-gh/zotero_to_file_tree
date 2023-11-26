@@ -1,12 +1,13 @@
 set(LIB_NAME zotero_to_file_tree_lib)
 
-add_library(${LIB_NAME} ZoteroToFileTree.cpp
+add_library(${LIB_NAME}
+        ZoteroToFileTree.cpp
         ZoteroDB.cpp
         CollectionTree.cpp
-        CollectionTree.h
-        ZoteroCollection.h
-        PDFItem.h
-        ZoteroPDFAttachment.h
+        CollectionTree.hpp
+        ZoteroCollection.hpp
+        PDFItem.hpp
+        ZoteroPDFAttachment.hpp
         ErrorCodes.hpp
         ErrorCodes.cpp
 )

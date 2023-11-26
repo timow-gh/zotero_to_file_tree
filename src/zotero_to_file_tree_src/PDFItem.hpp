@@ -1,8 +1,8 @@
 #ifndef ZOTERO_TO_FILE_TREE_PDFITEM_H
 #define ZOTERO_TO_FILE_TREE_PDFITEM_H
 
-#include "ZoteroCollection.h"
-#include "ZoteroPDFAttachment.h"
+#include "ZoteroCollection.hpp"
+#include "ZoteroPDFAttachment.hpp"
 #include <filesystem>
 #include <vector>
 

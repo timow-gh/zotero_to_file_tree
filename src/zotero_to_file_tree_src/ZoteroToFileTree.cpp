@@ -1,8 +1,8 @@
-#include "ZoteroToFileTree.h"
+#include "ZoteroToFileTree.hpp"
 #include "CLI/Error.hpp"
-#include "CollectionTree.h"
+#include "CollectionTree.hpp"
 #include "ErrorCodes.hpp"
-#include "ZoteroDB.h"
+#include "ZoteroDB.hpp"
 #include "fmt/core.h"
 #include <CLI/CLI.hpp>
 #include <filesystem>

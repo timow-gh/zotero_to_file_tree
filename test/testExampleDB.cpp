@@ -1,6 +1,6 @@
 #include "TestResources.h"
 #include <ErrorCodes.hpp>
-#include <ZoteroToFileTree.h>
+#include <ZoteroToFileTree.hpp>
 #include <gtest/gtest.h>
 
 TEST(ZoteroToFileTree, test_argument_help) {

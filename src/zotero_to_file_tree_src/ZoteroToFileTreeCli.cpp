@@ -1,4 +1,4 @@
-#include "ZoteroToFileTree.h"
+#include "ZoteroToFileTree.hpp"
 
 int main(int argc, char** argv) {
   std::error_code errorCode = zotfiles::ZoteroToFileTree::run(argc, argv);

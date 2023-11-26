@@ -1,9 +1,9 @@
 #ifndef ZOTERO_TO_FILE_TREE_ZOTEROTOFILETREE_H
 #define ZOTERO_TO_FILE_TREE_ZOTEROTOFILETREE_H
 
-#include "CollectionTree.h"
+#include "CollectionTree.hpp"
 #include "ErrorCodes.hpp"
-#include "ZoteroDB.h"
+#include "ZoteroDB.hpp"
 #include <CLI/Error.hpp>
 #include <filesystem>
 
