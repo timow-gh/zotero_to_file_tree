@@ -193,23 +193,22 @@ bool is_supported_zotero_db(const std::filesystem::path& zoteroDBPath) {
 }
 
 std::vector<ZoteroPDFAttachment> pdf_attachments(const std::filesystem::path& zoteroDBPath) {
-  static const std::string queryString = fmt::format(
-      "SELECT \n"
-      "itemAttachments.itemID,\n"
-      "itemAttachments.parentItemID,\n"
-      "itemAttachments.path,\n"
-      "items.key\n"
-      "FROM \n"
-      "itemAttachments \n"
-      "LEFT JOIN items\n"
-      "ON items.itemID = itemAttachments.itemID\n"
-      "WHERE itemAttachments.contentType = 'application/pdf'");
+  static std::string_view queryString = R"(
+    SELECT
+    itemAttachments.itemID,
+    itemAttachments.parentItemID,
+    itemAttachments.path,
+    items.key
+    FROM
+    itemAttachments
+    LEFT JOIN items ON items.itemID = itemAttachments.itemID
+    WHERE itemAttachments.contentType = 'application/pdf')";
 
   std::vector<ZoteroPDFAttachment> pdf_items;
   try
   {
     const SQLite::Database db(zoteroDBPath, SQLite::OPEN_READONLY);
-    SQLite::Statement query(db, queryString);
+    SQLite::Statement query(db, queryString.data());
 
     while (query.executeStep())
     {
