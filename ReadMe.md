@@ -9,11 +9,10 @@ Zotero collection structure.
 zotero_to_file_tree.exe [OPTIONS]
 
 Options:
-    -h,--help                 Print this help message and exit
-    -l,--lib <path>           Path to the zotero library. Default is the current directory.
-    -o,--output_dir <path>    Path to the output directory.
-    --print_db_info           Print the zotero db info.
-    --overwrite_output_dir    Overwrite the output directory if it exists. 
-                              All files in the output directory will be deleted.
-    --skip_existing           Skip existing files if they exist in the output directory.
+  -h,--help                   Print this help message and exit
+  -l,--lib TEXT               Path to the zotero library. Default is the current directory.
+  -o,--output_dir TEXT        Path to the output directory.
+  --print_db_info             Print the zotero db info.
+  --overwrite_dir             Overwrite the output directory if it exists.
+  --overwrite_files           Overwrite existing files if they exist in the output directory.
 ```

@@ -6,6 +6,12 @@
 namespace zotfiles
 {
 
+/**
+ * @brief Error codes for ZoteroToFileTree
+ *
+ *
+ */
+
 enum class ErrorCodes
 {
   SUCCESS = 0, /**< 0 must represent success for every error_category */

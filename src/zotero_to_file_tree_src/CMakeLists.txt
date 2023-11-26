@@ -1,6 +1,7 @@
 set(LIB_NAME zotero_to_file_tree_lib)
 
 add_library(${LIB_NAME}
+        mainpage.hpp
         ZoteroToFileTree.cpp
         ZoteroDB.cpp
         CollectionTree.cpp

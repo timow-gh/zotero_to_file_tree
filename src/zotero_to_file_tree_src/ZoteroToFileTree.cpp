@@ -160,12 +160,10 @@ std::error_code ZoteroToFileTree::run(int argc, char** argv) {
   app.add_flag("--print_db_info", printZoteroDBInfo, "Print the zotero db info.");
 
   bool overwriteOutputDir{false};
-  app.add_flag("--overwrite_dir",
-               overwriteOutputDir,
-               "Overwrite the output directory if it exists. All directories and files in the output directory will be deleted.");
+  app.add_flag("--overwrite_dir", overwriteOutputDir, "Overwrite the output directory if it exists.");
 
   bool overwriteExistingFiles{false};
-  app.add_flag("--overwrite_files", overwriteExistingFiles, "Skip existing files if they exist in the output directory.");
+  app.add_flag("--overwrite_files", overwriteExistingFiles, "Overwrite existing files if they exist in the output directory.");
 
   try
   { app.parse((argc), (argv)); }
