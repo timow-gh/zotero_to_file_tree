@@ -6,8 +6,7 @@
 namespace zotfiles
 {
 
-std::shared_ptr<CollectionNode> CollectionTree::find(std::int64_t collectionID) const
-{
+std::shared_ptr<CollectionNode> CollectionTree::find(std::int64_t collectionID) const {
   std::deque<std::shared_ptr<CollectionNode>> queue;
   for (auto& node: m_collectionNodes)
     queue.push_back(node);
@@ -25,8 +24,7 @@ std::shared_ptr<CollectionNode> CollectionTree::find(std::int64_t collectionID) 
   return nullptr;
 }
 bool CollectionTree::erase_collection_node(std::vector<std::shared_ptr<CollectionNode>>& collectionNodes,
-                                           const CollectionNode& collectionNode)
-{
+                                           const CollectionNode& collectionNode) {
   auto findIter = std::find_if(collectionNodes.cbegin(),
                                collectionNodes.cend(),
                                [&collectionNode](const auto& node) { return node->collectionID == collectionNode.collectionID; });
@@ -38,8 +36,7 @@ bool CollectionTree::erase_collection_node(std::vector<std::shared_ptr<Collectio
 
   return false;
 }
-bool CollectionTree::remove(const CollectionNode& collectionNode)
-{
+bool CollectionTree::remove(const CollectionNode& collectionNode) {
   if (erase_collection_node(m_collectionNodes, collectionNode))
     return true;
 
@@ -65,8 +62,7 @@ bool CollectionTree::remove(const CollectionNode& collectionNode)
 
   return false;
 }
-CollectionTree CollectionTree::build(std::unordered_map<std::int64_t, std::shared_ptr<CollectionNode>> collectionNodes)
-{
+CollectionTree CollectionTree::build(std::unordered_map<std::int64_t, std::shared_ptr<CollectionNode>> collectionNodes) {
   // Iterate over the nodes and add them as children of their parent nodes
   for (auto& [collectionID, collectionNode]: collectionNodes)
   {
@@ -93,10 +89,8 @@ CollectionTree CollectionTree::build(std::unordered_map<std::int64_t, std::share
   return collectionTree;
 }
 
-std::pair<std::size_t, std::size_t> CollectionTree::write_pdfs(std::filesystem::path outputDir, bool overwriteExistingFiles)
-{
-  struct NodePathPair
-  {
+std::pair<std::size_t, std::size_t> CollectionTree::write_pdfs(std::filesystem::path outputDir, bool overwriteExistingFiles) {
+  struct NodePathPair {
     CollectionNode* node{nullptr};
     std::filesystem::path relPath;
   };
@@ -144,9 +138,7 @@ std::pair<std::size_t, std::size_t> CollectionTree::write_pdfs(std::filesystem::
         ++writtenPDFs;
       }
       catch (std::exception& e)
-      {
-        fmt::print("Error copying PDF in collection: '{}',\n'{}'\n\n", nodePathPair.node->collectionName, e.what());
-      }
+      { fmt::print("Error copying PDF in collection: '{}',\n'{}'\n\n", nodePathPair.node->collectionName, e.what()); }
     }
   }
 

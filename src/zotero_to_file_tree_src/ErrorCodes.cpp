@@ -3,12 +3,10 @@
 namespace zotfiles
 {
 
-const char* ZoteroToFileTreeErrorCategory::name() const noexcept
-{
+const char* ZoteroToFileTreeErrorCategory::name() const noexcept {
   return "ZoteroToFileTreeErrorCategory";
 }
-std::string ZoteroToFileTreeErrorCategory::message(int ev) const
-{
+std::string ZoteroToFileTreeErrorCategory::message(int ev) const {
   ErrorCodes errorCode = static_cast<ErrorCodes>(ev);
   switch (errorCode)
   {
@@ -20,8 +18,7 @@ std::string ZoteroToFileTreeErrorCategory::message(int ev) const
   }
 }
 
-std::error_code make_error_code(zotfiles::ErrorCodes errorCode)
-{
+std::error_code make_error_code(zotfiles::ErrorCodes errorCode) {
   static zotfiles::ZoteroToFileTreeErrorCategory errorCategory;
   return {static_cast<int>(errorCode), errorCategory};
 }

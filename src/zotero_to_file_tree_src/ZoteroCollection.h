@@ -12,9 +12,8 @@ namespace zotfiles
  *
  * Zotero collections are a tree structure that is displayed in the Zotero client.
  */
-struct ZoteroCollection
-{
-  std::int64_t collectionID{}; /**< collectionID The collectionID is the primary key of the collections table. */
+struct ZoteroCollection {
+  std::int64_t collectionID{};       /**< collectionID The collectionID is the primary key of the collections table. */
   std::int64_t parentCollectionID{}; /**< -1 if the collection has no parent collection */
   std::string collectionName;
 

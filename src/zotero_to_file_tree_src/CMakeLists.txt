@@ -1,14 +1,14 @@
 set(LIB_NAME zotero_to_file_tree_lib)
 
 add_library(${LIB_NAME} ZoteroToFileTree.cpp
-ZoteroDB.cpp
-CollectionTree.cpp
-CollectionTree.h
-ZoteroCollection.h
-PDFItem.h
-ZoteroPDFAttachment.h
-ErrorCodes.hpp
-ErrorCodes.cpp
+        ZoteroDB.cpp
+        CollectionTree.cpp
+        CollectionTree.h
+        ZoteroCollection.h
+        PDFItem.h
+        ZoteroPDFAttachment.h
+        ErrorCodes.hpp
+        ErrorCodes.cpp
 )
 target_link_libraries(${LIB_NAME} PRIVATE fmt::fmt SQLiteCpp PUBLIC CLI11::CLI11)
 add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})

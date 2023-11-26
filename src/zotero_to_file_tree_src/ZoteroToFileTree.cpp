@@ -23,8 +23,7 @@ namespace zotfiles
  * - add option to query only files of a specific library
  */
 
-[[nodiscard]] std::vector<PDFItem> ZoteroToFileTree::create_pdfitems(const std::filesystem::path& zoteroDbPath)
-{
+[[nodiscard]] std::vector<PDFItem> ZoteroToFileTree::create_pdfitems(const std::filesystem::path& zoteroDbPath) {
   const std::vector<zotfiles::ZoteroPDFAttachment> pdfAttachments = zotfiles::pdf_attachments(zoteroDbPath);
   std::vector<zotfiles::PDFItem> pdfItems = zotfiles::pdf_items(pdfAttachments, zoteroDbPath);
   auto removeEndIter = std::remove_if(pdfItems.begin(),
@@ -36,8 +35,7 @@ namespace zotfiles
 }
 
 [[nodiscard]] CollectionTree ZoteroToFileTree::create_collectiontree(const std::vector<zotfiles::PDFItem>& pdfItems,
-                                                                     const std::filesystem::path& zoteroDbPath)
-{
+                                                                     const std::filesystem::path& zoteroDbPath) {
   const std::unordered_map<std::int64_t, zotfiles::ZoteroCollection> pdfItemCollections =
       zotfiles::all_pdf_item_collections(pdfItems, zoteroDbPath);
 
@@ -85,8 +83,7 @@ namespace zotfiles
   return collectionTree;
 }
 
-[[nodiscard]] std::filesystem::path ZoteroToFileTree::create_output_dir(const std::string& outputDirStr, bool overwriteOutputDir)
-{
+[[nodiscard]] std::filesystem::path ZoteroToFileTree::create_output_dir(const std::string& outputDirStr, bool overwriteOutputDir) {
   const std::filesystem::path outputDirPath = std::filesystem::path(outputDirStr);
 
   std::error_code errorCode;
@@ -132,8 +129,7 @@ namespace zotfiles
  * @param library_path_str String containing the path to the zotero library or the directory with the zotero db file.
  * @return The std::filesystem::path to the zotero db file.
  */
-[[nodiscard]] std::filesystem::path ZoteroToFileTree::create_zotero_db_path(const std::string& library_path_str)
-{
+[[nodiscard]] std::filesystem::path ZoteroToFileTree::create_zotero_db_path(const std::string& library_path_str) {
   std::filesystem::path zotero_lib_path = std::filesystem::path(library_path_str);
 
   if (!std::filesystem::exists(zotero_lib_path))
@@ -149,8 +145,7 @@ namespace zotfiles
   return zotero_lib_path;
 }
 
-std::error_code ZoteroToFileTree::run(int argc, char** argv)
-{
+std::error_code ZoteroToFileTree::run(int argc, char** argv) {
   std::locale::global(std::locale("en_US.UTF-8"));
 
   CLI::App app{"Converts a exported zotero library to a file tree."};
@@ -173,9 +168,7 @@ std::error_code ZoteroToFileTree::run(int argc, char** argv)
   app.add_flag("--overwrite_files", overwriteExistingFiles, "Skip existing files if they exist in the output directory.");
 
   try
-  {
-    app.parse((argc), (argv));
-  }
+  { app.parse((argc), (argv)); }
   catch (const CLI::ParseError& e)
   {
     app.exit(e);

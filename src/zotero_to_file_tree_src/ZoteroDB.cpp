@@ -9,8 +9,7 @@
 namespace zotfiles
 {
 
-static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::int32_t val)
-{
+static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::int32_t val) {
   static auto zoterDBInfoSetter = std::unordered_map<std::string_view, std::function<void(ZoteroDBInfo & info, uint32_t value)>>{
       {"userdata", [](ZoteroDBInfo& zInfo, std::uint32_t value) { zInfo.userdata = value; }},
       {"triggers", [](ZoteroDBInfo& zInfo, std::uint32_t value) { zInfo.triggers = value; }},
@@ -31,8 +30,7 @@ static void insertDBValue(ZoteroDBInfo& info, const std::string_view key, std::i
 
 // SQL querie to get the parent collections of the given pdf item ids
 template <typename ForwardIter>
-static std::string item_collections_query(ForwardIter itemIDBegin, ForwardIter itemIDEnd)
-{
+static std::string item_collections_query(ForwardIter itemIDBegin, ForwardIter itemIDEnd) {
   static const std::string queryString = fmt::format(
       "SELECT \n"
       "items.itemID,\n"
@@ -56,8 +54,7 @@ public:
   using const_iterator = std::vector<std::int64_t>::const_iterator;
 
   template <typename Iter>
-  void operator()(Iter begin, Iter end)
-  {
+  void operator()(Iter begin, Iter end) {
     pdfItemIDs.reserve(static_cast<std::size_t>(std::distance(begin, end)));
     collect_ids<PDFItem>(begin, end, std::back_inserter(pdfItemIDs));
   }
@@ -73,8 +70,7 @@ public:
   using const_iterator = std::vector<std::int64_t>::const_iterator;
 
   template <typename Iter>
-  void operator()(Iter begin, Iter end)
-  {
+  void operator()(Iter begin, Iter end) {
     pdfParentItemIDs.reserve(static_cast<std::size_t>(std::distance(begin, end)));
     collect_parent_ids<PDFItem>(begin, end, std::back_inserter(pdfParentItemIDs));
   }
@@ -84,8 +80,7 @@ public:
 };
 
 template <typename Item, typename ForwardIter, typename OutputIter>
-void collect_ids(ForwardIter first, ForwardIter last, OutputIter outPutIter)
-{
+void collect_ids(ForwardIter first, ForwardIter last, OutputIter outPutIter) {
   if constexpr (std::is_same_v<Item, PDFItem>)
   {
     std::transform(first, last, outPutIter, [](const PDFItem& item) { return item.pdfAttachment.itemID; });
@@ -97,8 +92,7 @@ void collect_ids(ForwardIter first, ForwardIter last, OutputIter outPutIter)
 }
 
 template <typename Item, typename ForwardIter, typename OutputIter>
-void collect_parent_ids(ForwardIter first, ForwardIter last, OutputIter outPutIter)
-{
+void collect_parent_ids(ForwardIter first, ForwardIter last, OutputIter outPutIter) {
   if constexpr (std::is_same_v<Item, PDFItem>)
   {
     std::transform(first, last, outPutIter, [](const PDFItem& item) { return item.pdfAttachment.parentItemID; });
@@ -109,14 +103,12 @@ void collect_parent_ids(ForwardIter first, ForwardIter last, OutputIter outPutIt
   }
 }
 
-std::string_view standard_zotero_db_name()
-{
+std::string_view standard_zotero_db_name() {
   static constexpr std::string_view zotero_db_name = "zotero.sqlite";
   return zotero_db_name;
 }
 
-ZoteroDBInfo zotero_db_info(const std::filesystem::path& zoteroDBPath)
-{
+ZoteroDBInfo zotero_db_info(const std::filesystem::path& zoteroDBPath) {
   if (!std::filesystem::exists(zoteroDBPath))
   {
     fmt::print("Zotero DB file does not exist: {}\n", zoteroDBPath.string());
@@ -148,8 +140,7 @@ ZoteroDBInfo zotero_db_info(const std::filesystem::path& zoteroDBPath)
   return zotero_db_info;
 }
 
-std::string formatted_zotero_db_info(const ZoteroDBInfo& info)
-{
+std::string formatted_zotero_db_info(const ZoteroDBInfo& info) {
   std::string table;
   table += fmt::format("{:-<29}\n", "");
   table += fmt::format("|{:<15}|{:>11}|\n", "userdata", info.userdata);
@@ -165,8 +156,7 @@ std::string formatted_zotero_db_info(const ZoteroDBInfo& info)
   return table;
 }
 
-ZoteroDBInfo supported_zotero_db_info()
-{
+ZoteroDBInfo supported_zotero_db_info() {
   static constexpr ZoteroDBInfo supported_zotero_db_info{
       121,        // userdata
       18,         // triggers
@@ -181,8 +171,7 @@ ZoteroDBInfo supported_zotero_db_info()
   return supported_zotero_db_info;
 }
 
-bool is_supported_zotero_db(const std::filesystem::path& zoteroDBPath)
-{
+bool is_supported_zotero_db(const std::filesystem::path& zoteroDBPath) {
   auto zoteroDBInfo = zotero_db_info(zoteroDBPath);
   auto supportedZoteroDBInfo = supported_zotero_db_info();
 
@@ -203,8 +192,7 @@ bool is_supported_zotero_db(const std::filesystem::path& zoteroDBPath)
   return true;
 }
 
-std::vector<ZoteroPDFAttachment> pdf_attachments(const std::filesystem::path& zoteroDBPath)
-{
+std::vector<ZoteroPDFAttachment> pdf_attachments(const std::filesystem::path& zoteroDBPath) {
   static const std::string queryString = fmt::format(
       "SELECT \n"
       "itemAttachments.itemID,\n"
@@ -242,8 +230,7 @@ std::vector<ZoteroPDFAttachment> pdf_attachments(const std::filesystem::path& zo
   return pdf_items;
 }
 
-std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& collectionIds, const std::filesystem::path& zoteroDBPath)
-{
+std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& collectionIds, const std::filesystem::path& zoteroDBPath) {
   const std::string queryString = fmt::format(
       "SELECT c.collectionID, c.parentCollectionID, c.collectionName\n"
       "FROM collections c\n"
@@ -285,8 +272,8 @@ std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& coll
   return result;
 }
 
-std::vector<PDFItem> pdf_items(const std::vector<zotfiles::ZoteroPDFAttachment>& pdfAttachments, const std::filesystem::path& zoteroDBPath)
-{
+std::vector<PDFItem> pdf_items(const std::vector<zotfiles::ZoteroPDFAttachment>& pdfAttachments,
+                               const std::filesystem::path& zoteroDBPath) {
   std::vector<PDFItem> pdfItems;
   pdfItems.reserve(pdfAttachments.size());
   std::transform(pdfAttachments.begin(),
@@ -336,8 +323,7 @@ std::vector<PDFItem> pdf_items(const std::vector<zotfiles::ZoteroPDFAttachment>&
 
 template <typename ItemIDsPolicy, typename ForwardIter>
 static std::unordered_map<std::int64_t, std::vector<ZoteroCollection>>
-retrieve_item_collections(ForwardIter begin, ForwardIter end, const std::filesystem::path& zoteroDbPath)
-{
+retrieve_item_collections(ForwardIter begin, ForwardIter end, const std::filesystem::path& zoteroDbPath) {
   ItemIDsPolicy itemIDsPolicy;
   itemIDsPolicy(begin, end);
   const std::string queryString = item_collections_query(itemIDsPolicy.cbegin(), itemIDsPolicy.cend());
@@ -375,8 +361,7 @@ retrieve_item_collections(ForwardIter begin, ForwardIter end, const std::filesys
   return itemCollectionMap;
 }
 
-void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::filesystem::path& zoteroDBPath)
-{
+void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::filesystem::path& zoteroDBPath) {
   // Find collections of the pdf items.
   const std::unordered_map<std::int64_t, std::vector<ZoteroCollection>> itemCollectionMap =
       retrieve_item_collections<PDFItemIDsPolicy>(pdfItems.begin(), pdfItems.end(), zoteroDBPath);
@@ -416,8 +401,7 @@ void retrieve_pdf_item_collections(std::vector<PDFItem>& pdfItems, const std::fi
                 });
 }
 std::unordered_map<std::int64_t, ZoteroCollection> all_pdf_item_collections(const std::vector<PDFItem>& pdfItems,
-                                                                            const std::filesystem::path& zoteroDBPath)
-{
+                                                                            const std::filesystem::path& zoteroDBPath) {
   std::unordered_map<std::int64_t, ZoteroCollection> collectionMap;
   std::for_each(pdfItems.begin(),
                 pdfItems.end(),

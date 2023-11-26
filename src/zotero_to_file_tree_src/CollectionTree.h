@@ -13,9 +13,8 @@ namespace zotfiles
 
 /** @brief The collection item represents a pdf item from the zotero db.
  */
-struct CollectionPDFItem
-{
-  std::int64_t pdfItemId{}; /**< Identifies the CollectionPDFItem uniquely. */
+struct CollectionPDFItem {
+  std::int64_t pdfItemId{};          /**< Identifies the CollectionPDFItem uniquely. */
   std::string pdfName;               /**< The name of the pdf file. */
   std::filesystem::path pdfFilePath; /**< The absolute path to the pdf file. */
 
@@ -26,9 +25,8 @@ struct CollectionPDFItem
  *
  * A CollectionNode must have a unique id.
  */
-struct CollectionNode
-{
-  std::int64_t collectionID{}; /**< Identifies the CollectionNode uniquely. */
+struct CollectionNode {
+  std::int64_t collectionID{};       /**< Identifies the CollectionNode uniquely. */
   std::int64_t parentCollectionID{}; /**< CollectionID of the parent. -1 if no parent exists. */
   std::string collectionName;
   std::vector<CollectionPDFItem> collectionPDFItems;

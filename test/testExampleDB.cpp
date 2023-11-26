@@ -3,8 +3,7 @@
 #include <ZoteroToFileTree.h>
 #include <gtest/gtest.h>
 
-TEST(ZoteroToFileTree, test_argument_help)
-{
+TEST(ZoteroToFileTree, test_argument_help) {
   char* argv[] = {(char*)"zotero_to_file_tree", (char*)"--help"};
   int argc = 2;
   std::error_code errorCode = zotfiles::ZoteroToFileTree::run(argc, argv);
@@ -13,15 +12,13 @@ TEST(ZoteroToFileTree, test_argument_help)
   EXPECT_EQ(errorCode, expected);
 }
 
-TEST(ZoteroToFileTree, library_path_empty)
-{
+TEST(ZoteroToFileTree, library_path_empty) {
   char* argv[] = {(char*)"zotero_to_file_tree", (char*)"-l"};
   int argc = 2;
   EXPECT_EQ(zotfiles::ZoteroToFileTree::run(argc, argv), zotfiles::ErrorCodes::CLI_PARSE_ERROR);
 }
 
-TEST(ZoteroToFileTree, library_path_valid)
-{
+TEST(ZoteroToFileTree, library_path_valid) {
   std::filesystem::path zoterDBPath = zotero_example_db();
   auto dbPathStr = zoterDBPath.string();
   char* argv[] = {(char*)"zotero_to_file_tree", (char*)"-l", (char*)dbPathStr.c_str()};
@@ -29,8 +26,7 @@ TEST(ZoteroToFileTree, library_path_valid)
   EXPECT_EQ(zotfiles::ZoteroToFileTree::run(argc, argv), zotfiles::ErrorCodes::OUTPUT_DIR_INVALID);
 }
 
-TEST(ZoteroToFileTree, library_does_not_exist)
-{
+TEST(ZoteroToFileTree, library_does_not_exist) {
   std::filesystem::path zoterDBPath = zotero_example_db();
   std::string zoterDBPathString = zoterDBPath.parent_path().string();
   char* argv[] = {(char*)"zotero_to_file_tree", (char*)"-l", (char*)zoterDBPathString.c_str()};
@@ -38,8 +34,7 @@ TEST(ZoteroToFileTree, library_does_not_exist)
   EXPECT_EQ(zotfiles::ZoteroToFileTree::run(argc, argv), zotfiles::ErrorCodes::ZOTERO_DB_DOES_NOT_EXIST);
 }
 
-TEST(ZoteroToFileTree, library_not_supported)
-{
+TEST(ZoteroToFileTree, library_not_supported) {
   std::filesystem::path zoterDBPath = zotero_example_db_depr();
   std::string zoterDBPathString = zoterDBPath.string();
   char* argv[] = {(char*)"zotero_to_file_tree", (char*)"-l", (char*)zoterDBPathString.c_str()};

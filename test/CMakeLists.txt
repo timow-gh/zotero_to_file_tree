@@ -10,7 +10,7 @@ if (googletest_ADDED)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         target_compile_options(gtest_main INTERFACE
                 "-Wno-weak-vtables"
-                )
+        )
     endif ()
 endif ()
 

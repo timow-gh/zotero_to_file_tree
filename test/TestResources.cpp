@@ -3,8 +3,7 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-std::filesystem::path zotero_example_db_depr()
-{
+std::filesystem::path zotero_example_db_depr() {
 #ifdef RESOURCE_DIR_DEPR
   return std::filesystem::path(TOSTRING(RESOURCE_DIR_DEPR));
 #else
@@ -12,8 +11,7 @@ std::filesystem::path zotero_example_db_depr()
 #endif
 }
 
-std::filesystem::path zotero_example_db()
-{
+std::filesystem::path zotero_example_db() {
 #ifdef RESOURCE_DIR
   return std::filesystem::path(TOSTRING(RESOURCE_DIR));
 #else

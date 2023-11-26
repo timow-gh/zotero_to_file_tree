@@ -29,9 +29,7 @@ namespace std
 {
 
 template <>
-struct is_error_code_enum<zotfiles::ErrorCodes> : true_type
-{
-};
+struct is_error_code_enum<zotfiles::ErrorCodes> : true_type {};
 
 } // namespace std
 

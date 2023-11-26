@@ -12,10 +12,9 @@ namespace zotfiles
 /**
  *\brief Represents a pdf file in the storage directory.
  */
-struct PDFItem
-{
-  ZoteroPDFAttachment pdfAttachment; /**< pdfAttachment The entry in the zotero db that represents the pdf file. */
-  std::filesystem::path pdfFilePath; /**< pdfFilePath The absolute path to the pdf file on the file system. */
+struct PDFItem {
+  ZoteroPDFAttachment pdfAttachment;             /**< pdfAttachment The entry in the zotero db that represents the pdf file. */
+  std::filesystem::path pdfFilePath;             /**< pdfFilePath The absolute path to the pdf file on the file system. */
   std::vector<ZoteroCollection> collectionItems; /**< collectionItems The zotero collections that the pdf file is in. */
 };
 

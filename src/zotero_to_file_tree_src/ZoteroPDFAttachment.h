@@ -12,12 +12,11 @@ namespace zotfiles
  *
  * A ZoteroPDFAttachment represents an item in the zotero db that may have one or more pdf files attached.
  */
-struct ZoteroPDFAttachment
-{
-  std::int64_t itemID{}; /**< The itemID is the primary key of the items table. */
+struct ZoteroPDFAttachment {
+  std::int64_t itemID{};       /**< The itemID is the primary key of the items table. */
   std::int64_t parentItemID{}; /**< -1 if the item has no parent item. */
-  std::string path;  /**< Named after the 'path' entry in the zotero db. */
-  std::string key;  /**< Named after the 'key' entry in the zotero sb. */
+  std::string path;            /**< Named after the 'path' entry in the zotero db. */
+  std::string key;             /**< Named after the 'key' entry in the zotero sb. */
 };
 
 } // namespace zotfiles

@@ -11,8 +11,7 @@
 namespace zotfiles
 {
 
-struct ZoteroDBInfo
-{
+struct ZoteroDBInfo {
   // schema = version;
   std::uint32_t userdata{};
   std::uint32_t triggers{};
