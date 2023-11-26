@@ -230,17 +230,31 @@ std::vector<ZoteroPDFAttachment> pdf_attachments(const std::filesystem::path& zo
 }
 
 std::set<ZoteroCollection> parent_collections(const std::set<std::int64_t>& collectionIds, const std::filesystem::path& zoteroDBPath) {
-  const std::string queryString = fmt::format(
+  // Prepare the base query with placeholders
+  std::string queryString =
       "SELECT c.collectionID, c.parentCollectionID, c.collectionName\n"
       "FROM collections c\n"
-      "WHERE c.collectionID IN ({})",
-      fmt::join(collectionIds.begin(), collectionIds.end(), ","));
+      "WHERE c.collectionID IN (";
+  for (size_t i = 0; i < collectionIds.size(); ++i)
+  {
+    queryString += (i == 0 ? "?" : ",?");
+  }
+  queryString += ")";
 
   std::set<ZoteroCollection> result;
   try
   {
     const SQLite::Database db(zoteroDBPath, SQLite::OPEN_READONLY);
-    SQLite::Statement query(db, queryString);
+    SQLite::Statement query(db, queryString.data());
+
+    // Bind values to the placeholders
+    int count = 1;
+    for (auto iter = collectionIds.begin(); iter != collectionIds.end(); ++iter)
+    {
+      query.bind(count, *iter);
+      ++count;
+    }
+
     while (query.executeStep())
     {
       std::int64_t collectionID = -1;
