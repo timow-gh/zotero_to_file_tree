@@ -24,7 +24,7 @@ enum class ErrorCodes
 class ZoteroToFileTreeErrorCategory : public std::error_category {
 public:
   [[nodiscard]] const char* name() const noexcept override;
-  [[nodiscard]] std::string message(int ev) const override;
+  [[nodiscard]] std::string message(int event) const override;
 };
 
 std::error_code make_error_code(ErrorCodes errorCode);
